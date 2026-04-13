@@ -1,0 +1,17 @@
+{
+  "name": "client",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev"
+  },
+  "dependencies": {
+    "@astrojs/node": "^10.0.2",
+    "@tailwindcss/vite": "^4.2.1",
+    "astro": "^6.0.5",
+    "ky": "^2.0.0",
+    "nanostores": "^1.2.0",
+    "tailwindcss": "^4.2.1",
+    "zod": "^4.3.6"
+  }
+}

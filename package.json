@@ -1,0 +1,11 @@
+{
+  "name": "proyecto-final-redexcom",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": ["apps/*"],
+  "scripts": {
+    "api:dev": "npm run dev -w api",
+    "client:dev": "npm run dev -w client"
+  }
+}
