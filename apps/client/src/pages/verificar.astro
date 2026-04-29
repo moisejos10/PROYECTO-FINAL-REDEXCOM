@@ -1,0 +1,261 @@
+---
+import PageLayout from "../layout/PageLayout.astro";
+export const prerender = false;
+---
+
+<PageLayout title="Verificación">
+  <div class="flex items-center justify-center min-h-[calc(100vh-4rem)] px-4 py-12">
+    <div class="w-full max-w-md">
+
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <div class="w-14 h-14 rounded-xl bg-navy-700 flex items-center justify-center mx-auto mb-4 shadow-lg" style="box-shadow: 0 4px 14px rgba(0, 43, 69, 0.3);">
+          <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+          </svg>
+        </div>
+        <h1 class="text-2xl font-bold font-heading" style="color: var(--text-primary);">Verificar Cuenta</h1>
+        <p class="text-sm mt-1" style="color: var(--text-tertiary);">Ingresa el código de 6 dígitos enviado a tu correo</p>
+      </div>
+
+      <!-- Formulario de verificación -->
+      <form id="verify-form" class="theme-card p-6 sm:p-8 flex flex-col gap-6">
+        
+        <!-- Email (readonly, llenado desde URL) -->
+        <div class="flex flex-col gap-1.5">
+          <label for="verify-email" class="theme-label">Correo electrónico</label>
+          <input 
+            type="email" 
+            id="verify-email" 
+            readonly
+            class="theme-input opacity-60 cursor-not-allowed"
+          />
+        </div>
+
+        <!-- Código de verificación -->
+        <div class="flex flex-col gap-2">
+          <label class="theme-label text-center">Código de verificación</label>
+          <div class="flex gap-2 sm:gap-3 justify-center" id="code-inputs">
+            <input type="text" maxlength="1" class="code-input w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-bold theme-input p-0!" data-index="0" />
+            <input type="text" maxlength="1" class="code-input w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-bold theme-input p-0!" data-index="1" />
+            <input type="text" maxlength="1" class="code-input w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-bold theme-input p-0!" data-index="2" />
+            <span class="flex items-center text-2xl font-light" style="color: var(--text-tertiary);">-</span>
+            <input type="text" maxlength="1" class="code-input w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-bold theme-input p-0!" data-index="3" />
+            <input type="text" maxlength="1" class="code-input w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-bold theme-input p-0!" data-index="4" />
+            <input type="text" maxlength="1" class="code-input w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-bold theme-input p-0!" data-index="5" />
+          </div>
+        </div>
+
+        <!-- Estado de verificación -->
+        <div id="verify-status" class="hidden text-center py-3 rounded-lg text-sm font-medium"></div>
+
+        <!-- Botón verificar -->
+        <button 
+          type="submit" 
+          id="verify-btn"
+          class="btn-brand w-full py-3 text-base"
+          style="background-color: #002B45; box-shadow: 0 4px 14px rgba(0, 43, 69, 0.3);"
+          onmouseover="this.style.backgroundColor='#003d61'"
+          onmouseout="this.style.backgroundColor='#002B45'"
+        >
+          Verificar cuenta
+        </button>
+
+        <!-- Reenviar código -->
+        <div class="text-center">
+          <button type="button" id="resend-btn" class="text-sm text-brand-500 hover:text-brand-600 font-medium transition-colors">
+            ¿No recibiste el código? Reenviar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</PageLayout>
+
+<script>
+  import ky from "ky";
+  import { showToast } from '../components/notification/notification';
+
+  // Obtener email de la URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const email = urlParams.get('email') || '';
+
+  const emailInput = document.getElementById('verify-email') as HTMLInputElement | null;
+  if (emailInput) {
+    emailInput.value = email;
+  }
+
+  // Lógica de los inputs del código
+  const codeInputs = document.querySelectorAll<HTMLInputElement>('.code-input');
+
+  codeInputs.forEach((input, index) => {
+    input.addEventListener('input', () => {
+      const value = input.value;
+      
+      // Solo permitir números
+      if (!/^\d*$/.test(value)) {
+        input.value = '';
+        return;
+      }
+
+      // Avanzar al siguiente input
+      if (value && index < codeInputs.length - 1) {
+        codeInputs[index + 1].focus();
+      }
+
+      // Auto-submit cuando se llenan todos los campos
+      const code = getCode();
+      if (code.length === 6) {
+        document.getElementById('verify-form')?.dispatchEvent(new Event('submit', { cancelable: true }));
+      }
+    });
+
+    input.addEventListener('keydown', (e: KeyboardEvent) => {
+      // Retroceder con Backspace
+      if (e.key === 'Backspace' && !input.value && index > 0) {
+        codeInputs[index - 1].focus();
+      }
+    });
+
+    // Permitir pegar código completo
+    input.addEventListener('paste', (e: ClipboardEvent) => {
+      e.preventDefault();
+      const pastedData = (e.clipboardData?.getData('text') || '').replace(/\D/g, '').slice(0, 6);
+      
+      pastedData.split('').forEach((char, i) => {
+        if (codeInputs[i]) {
+          codeInputs[i].value = char;
+        }
+      });
+
+      // Focus en el último campo o el siguiente vacío
+      const nextEmpty = Math.min(pastedData.length, codeInputs.length - 1);
+      codeInputs[nextEmpty].focus();
+    });
+  });
+
+  function getCode(): string {
+    return Array.from(codeInputs).map(input => input.value).join('');
+  }
+
+  // Submit verificación
+  const verifyForm = document.getElementById('verify-form');
+
+  verifyForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const code = getCode();
+
+    if (code.length !== 6) {
+      showToast({
+        type: 'error',
+        text: 'Por favor ingresa el código completo de 6 dígitos'
+      });
+      return;
+    }
+
+    if (!email) {
+      showToast({
+        type: 'error',
+        text: 'Email no encontrado. Regresa a la página de registro.'
+      });
+      return;
+    }
+
+    try {
+      await ky.post('/api/auth/verify', {
+        json: { email, code }
+      }).json();
+
+      showToast({
+        type: 'success',
+        text: '¡Cuenta verificada exitosamente! Redirigiendo al login...'
+      });
+
+      // Cambiar visualmente los inputs a verde
+      codeInputs.forEach(input => {
+        input.style.borderColor = '#10b981';
+        input.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
+      });
+
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 2000);
+
+    } catch (error) {
+      let errorMsg = 'Error al verificar la cuenta. Comprueba la conexión.';
+      if (error instanceof Error && 'response' in error) {
+        try {
+          const errorJson = await (error as any).response.json() as { error?: string };
+          if (errorJson.error) errorMsg = errorJson.error;
+        } catch(e) {}
+      }
+      
+      showToast({
+        type: 'error',
+        text: errorMsg
+      });
+
+      // Cambiar visualmente los inputs a rojo
+      codeInputs.forEach(input => {
+        input.style.borderColor = '#E31E24';
+        setTimeout(() => {
+          input.style.borderColor = '';
+        }, 2000);
+      });
+    }
+  });
+
+  // Reenviar código
+  const resendBtn = document.getElementById('resend-btn') as HTMLButtonElement | null;
+
+  resendBtn?.addEventListener('click', async () => {
+    if (!email) {
+      showToast({
+        type: 'error',
+        text: 'Email no encontrado.'
+      });
+      return;
+    }
+
+    try {
+      resendBtn.textContent = 'Enviando...';
+      resendBtn.disabled = true;
+
+      await ky.post('/api/auth/resend-code', {
+        json: { email }
+      }).json();
+
+      showToast({
+        type: 'success',
+        text: 'Nuevo código enviado a tu correo'
+      });
+
+      // Limpiar inputs
+      codeInputs.forEach(input => { input.value = ''; });
+      codeInputs[0].focus();
+
+    } catch (error) {
+      let errorMsg = 'Error al reenviar código. Comprueba la conexión.';
+      if (error instanceof Error && 'response' in error) {
+        try {
+          const errorJson = await (error as any).response.json() as { error?: string };
+          if (errorJson.error) errorMsg = errorJson.error;
+        } catch(e) {}
+      }
+      
+      showToast({
+        type: 'error',
+        text: errorMsg
+      });
+    } finally {
+      resendBtn.textContent = '¿No recibiste el código? Reenviar';
+      resendBtn.disabled = false;
+    }
+  });
+
+  // Focus el primer input
+  if (codeInputs[0]) {
+    codeInputs[0].focus();
+  }
+</script>

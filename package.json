@@ -1,11 +1,16 @@
 {
-  "name": "proyecto-final-redexcom",
+  "name": "redexcom-tickets",
   "version": "1.0.0",
-  "private": true,
-  "type": "module",
-  "workspaces": ["apps/*"],
+  "description": "Sistema de Tickets de Soporte - Corporacion RedexCom",
+  "main": "index.js",
   "scripts": {
+    "client:dev": "npm run dev -w client",
     "api:dev": "npm run dev -w api",
-    "client:dev": "npm run dev -w client"
-  }
+    "api:tables": "npm run tables:create -w api"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "workspaces": ["apps/*"]
 }

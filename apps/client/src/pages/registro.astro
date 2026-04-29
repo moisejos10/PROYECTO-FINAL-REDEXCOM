@@ -1,0 +1,259 @@
+---
+import Spinner from "../components/Spinner.astro";
+import PageLayout from "../layout/PageLayout.astro";
+---
+
+<PageLayout title="Registro">
+  <div class="flex items-center justify-center min-h-[calc(100vh-4rem)] px-4 py-12">
+    <div class="w-full max-w-md">
+      
+      <!-- Header del formulario -->
+      <div class="text-center mb-8">
+        <div class="w-14 h-14 rounded-xl bg-navy-700 flex items-center justify-center mx-auto mb-4 shadow-lg" style="box-shadow: 0 4px 14px rgba(0, 43, 69, 0.3);">
+          <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+          </svg>
+        </div>
+        <h1 class="text-2xl font-bold font-heading" style="color: var(--text-primary);">Crear Cuenta</h1>
+        <p class="text-sm mt-1" style="color: var(--text-tertiary);">Regístrate en el sistema de soporte RedexCom</p>
+      </div>
+
+      <!-- Formulario -->
+      <form id="signup-form" class="theme-card p-6 sm:p-8 flex flex-col gap-5">
+        
+        <!-- Nombre y Apellido en una fila -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="flex flex-col gap-1.5">
+            <label for="nombre" class="theme-label">Nombre</label>
+            <div class="relative">
+              <input 
+                type="text" 
+                id="nombre" 
+                class="theme-input pr-10"
+                placeholder="Juan"
+              />
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg id="nombre-check" class="w-5 h-5 text-emerald-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <svg id="nombre-cross" class="w-5 h-5 text-brand-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label for="apellido" class="theme-label">Apellido</label>
+            <div class="relative">
+              <input 
+                type="text" 
+                id="apellido" 
+                class="theme-input pr-10"
+                placeholder="Pérez"
+              />
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg id="apellido-check" class="w-5 h-5 text-emerald-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <svg id="apellido-cross" class="w-5 h-5 text-brand-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="flex flex-col gap-1.5">
+          <label for="email" class="theme-label">Correo electrónico</label>
+          <div class="relative">
+            <input 
+              type="email" 
+              id="email" 
+              class="theme-input pr-10"
+              placeholder="tu@correo.com"
+            />
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <svg id="email-check" class="w-5 h-5 text-emerald-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              <svg id="email-cross" class="w-5 h-5 text-brand-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contraseña -->
+        <div class="flex flex-col gap-1.5">
+          <label for="password" class="theme-label">Contraseña</label>
+          <div class="relative">
+            <input 
+              type="password" 
+              id="password" 
+              class="theme-input pr-10"
+              placeholder="••••••••"
+            />
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <svg id="password-check" class="w-5 h-5 text-emerald-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              <svg id="password-cross" class="w-5 h-5 text-brand-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </div>
+          </div>
+          <p class="text-xs" style="color: var(--text-tertiary);">Mín. 8 caracteres, 1 mayúscula, 1 minúscula, 1 número.</p>
+        </div>
+
+        <!-- Botón submit -->
+        <button 
+          type="submit" 
+          class="btn-brand w-full py-3 mt-2 text-base"
+          id="signup-submit-btn"
+        >
+          Crear cuenta
+          <Spinner />
+        </button>
+
+        <!-- Link a login -->
+        <p class="text-center text-sm" style="color: var(--text-tertiary);">
+          ¿Ya tienes cuenta? 
+          <a href="/login" class="text-brand-500 hover:text-brand-600 font-medium transition-colors">Iniciar sesión</a>
+        </p>
+      </form>
+    </div>
+  </div>
+</PageLayout>
+
+<script>
+  import { z } from 'astro/zod';
+  import ky from 'ky';
+  import { showToast } from '../components/notification/notification';
+
+  const formUserSchema = z.object({
+    nombre: z.string().min(2, { message: 'El nombre debe tener al menos 2 caracteres' }),
+    apellido: z.string().min(2, { message: 'El apellido debe tener al menos 2 caracteres' }),
+    email: z.email({ error: 'Tiene que ser un email válido' }),
+    password: z.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\S]{8,}$/, {
+      error: 'Recuerda cumplir los requerimientos de la contraseña',
+    })
+  });
+
+  // DOM Elements
+  const form = document.querySelector('#signup-form') as HTMLFormElement | null;
+  const nombreInput = document.querySelector('#nombre') as HTMLInputElement | null;
+  const apellidoInput = document.querySelector('#apellido') as HTMLInputElement | null;
+  const emailInput = document.querySelector('#email') as HTMLInputElement | null;
+  const passwordInput = document.querySelector('#password') as HTMLInputElement | null;
+  const spinner = document.querySelector('#spinner') as HTMLElement | null;
+
+  // Función reutilizable de validación visual
+  function validateField(fieldId: string, success: boolean) {
+    const checkIcon = document.querySelector(`#${fieldId}-check`);
+    const crossIcon = document.querySelector(`#${fieldId}-cross`);
+    const input = document.querySelector(`#${fieldId}`) as HTMLInputElement | null;
+
+    if (!input || !checkIcon || !crossIcon) return;
+
+    if (input.value.length === 0) {
+      checkIcon.classList.add('hidden');
+      crossIcon.classList.add('hidden');
+      return;
+    }
+
+    if (success) {
+      checkIcon.classList.remove('hidden');
+      crossIcon.classList.add('hidden');
+    } else {
+      checkIcon.classList.add('hidden');
+      crossIcon.classList.remove('hidden');
+    }
+  }
+
+  // Validación en tiempo real
+  nombreInput?.addEventListener('input', () => {
+    const { success } = formUserSchema
+      .pick({ nombre: true })
+      .safeParse({ nombre: nombreInput.value });    
+    validateField('nombre', success);
+  });
+
+  apellidoInput?.addEventListener('input', () => {
+    const { success } = formUserSchema
+      .pick({ apellido: true })
+      .safeParse({ apellido: apellidoInput.value });    
+    validateField('apellido', success);
+  });
+
+  emailInput?.addEventListener('input', () => {
+    const { success } = formUserSchema
+      .pick({ email: true })
+      .safeParse({ email: emailInput.value });    
+    validateField('email', success);
+  });
+
+  passwordInput?.addEventListener('input', () => {
+    const { success } = formUserSchema
+      .pick({ password: true })
+      .safeParse({ password: passwordInput.value });    
+    validateField('password', success);
+  });
+
+  // Envío del formulario
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = {
+      nombre: nombreInput?.value,
+      apellido: apellidoInput?.value,
+      email: emailInput?.value,
+      password: passwordInput?.value,
+    };
+
+    const { success, error } = formUserSchema.safeParse(formData);
+    const fieldErrors = error?.flatten().fieldErrors;
+    
+    if (success) {
+      try {
+        spinner?.classList.remove('hidden');        
+        const response = await ky.post('/api/user', { json: formData }).json() as { email: string };        
+        showToast({
+          type: 'success',
+          text: `¡Cuenta creada! Se envió un código de verificación a ${response.email}`
+        });
+        
+        // Redirigir a la página de verificación después de 2 segundos
+        setTimeout(() => {
+          window.location.href = `/verificar?email=${encodeURIComponent(response.email)}`;
+        }, 2000);
+        
+      } catch (error) {
+        let errorMsg = 'Error al crear la cuenta. Comprueba la conexión.';
+        if (error instanceof Error && 'response' in error) {
+          try {
+            const errorJson = await (error as any).response.json() as { error?: string };
+            if (errorJson.error) errorMsg = errorJson.error;
+          } catch(e) {}
+        }
+        showToast({
+          type: 'error',
+          text: errorMsg
+        }); 
+      } finally {
+        spinner?.classList.add('hidden');
+      } 
+    } else {
+      validateField('nombre', !fieldErrors?.nombre);
+      validateField('apellido', !fieldErrors?.apellido);
+      validateField('email', !fieldErrors?.email);
+      validateField('password', !fieldErrors?.password);
+      
+      showToast({
+        type: 'error',
+        text: 'Por favor corrige los campos marcados en rojo'
+      });
+    }
+  });
+</script>

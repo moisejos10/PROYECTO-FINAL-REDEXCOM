@@ -1,0 +1,35 @@
+---
+import Navbar from '../components/navigation/Navbar.astro';
+import Notification from '../components/notification/notification.astro';
+import '../styles/global.css';
+const { title } = Astro.props;
+---
+
+<html lang="es">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/png" href="/logo_redexcom.png" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="description" content="Sistema de Soporte Técnico - Corporación RedexCom" />
+		<meta name="generator" content={Astro.generator} />
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+		<title>{title} | Corporación RedexCom</title>
+	</head>
+	<body class="min-h-screen font-sans">
+		<Navbar />
+		<Notification />
+		<slot />
+
+		<!-- Theme initialization (runs before paint to prevent flash) -->
+		<script is:inline>
+			(function() {
+				const saved = localStorage.getItem('theme');
+				const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+				const theme = saved || (prefersDark ? 'dark' : 'light');
+				document.documentElement.setAttribute('data-theme', theme);
+			})();
+		</script>
+	</body>
+</html>

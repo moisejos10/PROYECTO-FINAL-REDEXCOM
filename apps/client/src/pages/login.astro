@@ -1,0 +1,140 @@
+---
+import Spinner from "../components/Spinner.astro";
+import PageLayout from "../layout/PageLayout.astro";
+---
+
+<PageLayout title="Iniciar Sesión">
+  <div class="flex items-center justify-center min-h-[calc(100vh-4rem)] px-4 py-12">
+    <div class="w-full max-w-md">
+      
+      <!-- Header del formulario -->
+      <div class="text-center mb-8">
+        <div class="w-14 h-14 rounded-xl bg-navy-700 flex items-center justify-center mx-auto mb-4 shadow-lg" style="box-shadow: 0 4px 14px rgba(0, 43, 69, 0.3);">
+          <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+          </svg>
+        </div>
+        <h1 class="text-2xl font-bold font-heading" style="color: var(--text-primary);">Iniciar Sesión</h1>
+        <p class="text-sm mt-1" style="color: var(--text-tertiary);">Accede al sistema de soporte RedexCom</p>
+      </div>
+
+      <!-- Formulario -->
+      <form id="login-form" class="theme-card p-6 sm:p-8 flex flex-col gap-5">
+        
+        <!-- Email -->
+        <div class="flex flex-col gap-1.5">
+          <label for="email" class="theme-label">Correo electrónico</label>
+          <input 
+            type="email" 
+            id="email" 
+            class="theme-input"
+            placeholder="tu@correo.com"
+          />
+        </div>
+
+        <!-- Contraseña -->
+        <div class="flex flex-col gap-1.5">
+          <label for="password" class="theme-label">Contraseña</label>
+          <input 
+            type="password" 
+            id="password" 
+            class="theme-input"
+            placeholder="••••••••"
+          />
+        </div>
+
+        <!-- Botón submit -->
+        <button 
+          type="submit" 
+          class="btn-brand w-full py-3 mt-2 text-base"
+          id="login-submit-btn"
+        >
+          Iniciar sesión
+          <Spinner />
+        </button>
+
+        <!-- Link a registro -->
+        <p class="text-center text-sm" style="color: var(--text-tertiary);">
+          ¿No tienes cuenta? 
+          <a href="/registro" class="text-brand-500 hover:text-brand-600 font-medium transition-colors">Crear cuenta</a>
+        </p>
+      </form>
+    </div>
+  </div>
+</PageLayout>
+
+<script>
+  import ky from "ky";
+  import { showToast } from '../components/notification/notification';
+
+  // DOM Elements
+  const form = document.getElementById('login-form') as HTMLFormElement | null;
+  const emailInput = document.getElementById('email') as HTMLInputElement | null;
+  const passwordInput = document.getElementById('password') as HTMLInputElement | null;
+  const spinner = document.getElementById('spinner') as HTMLElement | null;
+
+  // Submit
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    if (!emailInput?.value || !passwordInput?.value) {
+      showToast({
+        type: 'error',
+        text: 'Por favor completa todos los campos'
+      });
+      return;
+    }
+
+    const payload = {
+      email: emailInput.value,
+      password: passwordInput.value 
+    };
+
+    try {
+      spinner?.classList.remove('hidden');
+      const data = await ky.post('/api/auth/login', { json: payload }).json() as {
+        accessToken: string;
+        userId: number;
+        email: string;
+        nombre: string;
+        apellido: string;
+        rol: string;
+      };
+      
+      // Guardar el token en localStorage
+      localStorage.setItem('accessToken', data.accessToken);
+      localStorage.setItem('user', JSON.stringify({
+        id: data.userId,
+        email: data.email,
+        nombre: data.nombre,
+        apellido: data.apellido,
+        rol: data.rol
+      }));
+
+      showToast({
+        type: 'success',
+        text: `¡Bienvenido/a, ${data.nombre}!`
+      });
+
+      // Redirigir al dashboard (por ahora al inicio)
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1500);
+      
+    } catch (error) {
+      let errorMsg = 'Error al iniciar sesión. Comprueba la conexión.';
+      if (error instanceof Error && 'response' in error) {
+        try {
+          const errorJson = await (error as any).response.json() as { error?: string };
+          if (errorJson.error) errorMsg = errorJson.error;
+        } catch(e) {}
+      }
+      showToast({
+        type: 'error',
+        text: errorMsg
+      });
+    } finally {
+      spinner?.classList.add('hidden');
+    }
+  });
+</script>

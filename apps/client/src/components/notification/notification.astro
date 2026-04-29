@@ -1,0 +1,16 @@
+
+<div class="fixed w-full top-20 z-50">
+    <div class="flex justify-end px-4 max-w-7xl mx-auto">
+        <div id="toast" class="hidden items-center w-full max-w-sm p-4 rounded-xl shadow-xl border" style="background-color: var(--bg-card); border-color: var(--border-primary); box-shadow: var(--shadow-xl);" role="alert">
+            <div id="toast-icon-container" class="inline-flex items-center justify-center shrink-0 w-8 h-8 rounded-lg">
+            </div>
+            <div id="toast-text" class="ms-3 text-sm font-medium" style="color: var(--text-primary);"></div>
+            <button id="close-btn" type="button" class="ms-auto flex items-center justify-center rounded-lg w-8 h-8 transition-colors hover:bg-black/5" style="color: var(--text-tertiary);" aria-label="Cerrar">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+<script src="./notification.js"></script>
