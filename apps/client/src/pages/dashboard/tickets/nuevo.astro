@@ -1,0 +1,255 @@
+---
+import PageLayout from '../../../layout/PageLayout.astro';
+---
+
+<PageLayout title="Nuevo Ticket">
+  <!-- Loading State -->
+  <div id="page-loading" class="min-h-screen flex items-center justify-center">
+    <div class="text-center">
+      <div class="w-12 h-12 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+      <p class="theme-text-secondary text-lg">Verificando permisos...</p>
+    </div>
+  </div>
+
+  <!-- Form Content -->
+  <main id="page-content" class="hidden max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Header -->
+    <div class="mb-8">
+      <a href="/dashboard" class="inline-flex items-center gap-2 text-sm theme-text-muted hover:text-brand-500 transition-colors mb-4">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Volver al Dashboard
+      </a>
+      <h1 class="text-2xl sm:text-3xl font-heading font-bold theme-text">Crear Nuevo Ticket</h1>
+      <p class="mt-1 theme-text-secondary">Completa la información para generar un ticket de soporte técnico.</p>
+    </div>
+
+    <!-- Form -->
+    <form id="ticket-form" class="theme-card p-6 sm:p-8 space-y-6">
+      
+      <!-- Sección: Datos del Cliente -->
+      <div>
+        <h3 class="text-base font-heading font-semibold theme-text flex items-center gap-2 mb-4">
+          <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+          </svg>
+          Datos del Cliente
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="cliente_nombre" class="theme-label block mb-1.5">Nombre Completo *</label>
+            <input type="text" id="cliente_nombre" name="cliente_nombre" class="theme-input" placeholder="Ej: Juan Pérez" required />
+          </div>
+          <div>
+            <label for="cliente_telefono" class="theme-label block mb-1.5">Teléfono *</label>
+            <input type="tel" id="cliente_telefono" name="cliente_telefono" class="theme-input" placeholder="Ej: 0414-1234567" required />
+          </div>
+          <div class="sm:col-span-2">
+            <label for="cliente_direccion" class="theme-label block mb-1.5">Dirección *</label>
+            <input type="text" id="cliente_direccion" name="cliente_direccion" class="theme-input" placeholder="Ej: Av. Principal, Edif. Centro, Piso 3, Apto 3A" required />
+          </div>
+        </div>
+      </div>
+
+      <hr class="theme-border" />
+
+      <!-- Sección: Información del Ticket -->
+      <div>
+        <h3 class="text-base font-heading font-semibold theme-text flex items-center gap-2 mb-4">
+          <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+          </svg>
+          Información del Ticket
+        </h3>
+        <div class="space-y-4">
+          <div>
+            <label for="falla_descripcion" class="theme-label block mb-1.5">Descripción de la Falla *</label>
+            <textarea id="falla_descripcion" name="falla_descripcion" rows="4" class="theme-input resize-none" placeholder="Describe detalladamente el problema reportado por el cliente..." required></textarea>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="tecnico_id" class="theme-label block mb-1.5">Técnico Asignado *</label>
+              <select id="tecnico_id" name="tecnico_id" class="theme-input cursor-pointer" required>
+                <option value="">Seleccionar técnico...</option>
+              </select>
+            </div>
+            <div>
+              <label for="fecha_visita" class="theme-label block mb-1.5">Fecha de Visita Programada</label>
+              <input type="date" id="fecha_visita" name="fecha_visita" class="theme-input cursor-pointer" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="theme-border" />
+
+      <!-- Botones -->
+      <div class="flex flex-col sm:flex-row gap-3 pt-2">
+        <button type="submit" id="btn-submit" class="btn-brand flex-1 sm:flex-none">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          <span id="btn-submit-text">Crear Ticket</span>
+        </button>
+        <a href="/dashboard" class="btn-secondary flex-1 sm:flex-none text-center">Cancelar</a>
+      </div>
+
+      <!-- Error display -->
+      <div id="form-error" class="hidden rounded-xl p-4 text-sm" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444;"></div>
+    </form>
+  </main>
+
+  <script>
+    // ═══════════════════════════════════════════════
+    // Nuevo Ticket - Lógica del cliente
+    // ═══════════════════════════════════════════════
+
+    const API_BASE = '/api';
+    let accessToken = localStorage.getItem('accessToken');
+
+    async function refreshAccessToken() {
+      try {
+        const res = await fetch(`${API_BASE}/auth/refresh`, { credentials: 'include' });
+        if (!res.ok) throw new Error('Token refresh failed');
+        const data = await res.json();
+        accessToken = data.accessToken;
+        localStorage.setItem('accessToken', accessToken);
+        return true;
+      } catch { return false; }
+    }
+
+    async function fetchWithAuth(url, options = {}) {
+      let res = await fetch(url, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+          ...options.headers,
+        },
+        credentials: 'include',
+      });
+
+      if (res.status === 401 || res.status === 403) {
+        const refreshed = await refreshAccessToken();
+        if (refreshed) {
+          res = await fetch(url, {
+            ...options,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${accessToken}`,
+              ...options.headers,
+            },
+            credentials: 'include',
+          });
+        } else {
+          localStorage.removeItem('accessToken');
+          window.location.href = '/login';
+          return null;
+        }
+      }
+      return res;
+    }
+
+    function showError(message) {
+      const errorEl = document.getElementById('form-error');
+      errorEl.textContent = message;
+      errorEl.classList.remove('hidden');
+      errorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    async function initPage() {
+      const loadingEl = document.getElementById('page-loading');
+      const contentEl = document.getElementById('page-content');
+
+      // 1. Verificar autenticación
+      if (!accessToken) {
+        const refreshed = await refreshAccessToken();
+        if (!refreshed) { window.location.href = '/login'; return; }
+      }
+
+      // 2. Verificar que sea admin
+      const userRes = await fetchWithAuth(`${API_BASE}/auth/user`);
+      if (!userRes || !userRes.ok) { window.location.href = '/login'; return; }
+      const user = await userRes.json();
+
+      if (user.rol !== 'admin' && user.rol !== 'super_admin') {
+        window.location.href = '/dashboard';
+        return;
+      }
+
+      // 3. Cargar lista de técnicos
+      const tecnicosRes = await fetchWithAuth(`${API_BASE}/user/tecnicos`);
+      if (tecnicosRes && tecnicosRes.ok) {
+        const tecnicos = await tecnicosRes.json();
+        const select = document.getElementById('tecnico_id');
+        tecnicos.forEach(t => {
+          const option = document.createElement('option');
+          option.value = t.id;
+          option.textContent = `${t.nombre} ${t.apellido}`;
+          select.appendChild(option);
+        });
+      }
+
+      // 4. Mostrar contenido
+      loadingEl.classList.add('hidden');
+      contentEl.classList.remove('hidden');
+
+      // 5. Manejar envío del formulario
+      document.getElementById('ticket-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btn-submit');
+        const btnText = document.getElementById('btn-submit-text');
+        const errorEl = document.getElementById('form-error');
+        errorEl.classList.add('hidden');
+
+        // Deshabilitar botón
+        btn.disabled = true;
+        btnText.textContent = 'Creando ticket...';
+
+        const formData = {
+          cliente_nombre: document.getElementById('cliente_nombre').value.trim(),
+          cliente_direccion: document.getElementById('cliente_direccion').value.trim(),
+          cliente_telefono: document.getElementById('cliente_telefono').value.trim(),
+          falla_descripcion: document.getElementById('falla_descripcion').value.trim(),
+          tecnico_id: Number(document.getElementById('tecnico_id').value),
+          fecha_visita: document.getElementById('fecha_visita').value || undefined,
+        };
+
+        try {
+          const res = await fetchWithAuth(`${API_BASE}/tickets`, {
+            method: 'POST',
+            body: JSON.stringify(formData),
+          });
+
+          if (!res) return;
+
+          if (res.ok) {
+            // Redirigir al dashboard
+            window.location.href = '/dashboard';
+          } else {
+            const data = await res.json();
+            showError(data.error || 'Error al crear el ticket');
+            btn.disabled = false;
+            btnText.textContent = 'Crear Ticket';
+          }
+        } catch (err) {
+          showError('Error de conexión. Inténtalo de nuevo.');
+          btn.disabled = false;
+          btnText.textContent = 'Crear Ticket';
+        }
+      });
+
+      // 6. Botón cerrar sesión
+      document.getElementById('btn-signout')?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        try { await fetchWithAuth(`${API_BASE}/auth/signout`); } catch {}
+        localStorage.removeItem('accessToken');
+        window.location.href = '/login';
+      });
+    }
+
+    initPage();
+  </script>
+</PageLayout>

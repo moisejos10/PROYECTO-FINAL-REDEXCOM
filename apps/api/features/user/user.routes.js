@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import userRepository from './user.repository.js';
 import verificationRepository from '../auth/verification.repository.js';
 import nodemailerService from '../../services/nodemailer.js';
+import { authenticate, requireAdmin } from '../auth/auth.middlewares.js';
 const userRouter = Router();
 
 userRouter.post('/', async (req, res, next) => {
@@ -90,6 +91,16 @@ userRouter.post('/', async (req, res, next) => {
         console.error('Error al hacer rollback', rollbackError);
       }
     }
+    next(error);
+  }
+});
+
+// ── GET /api/user/tecnicos ── Obtener lista de técnicos (solo admin)
+userRouter.get('/tecnicos', authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    const tecnicos = userRepository.findTecnicos();
+    return res.status(200).json(tecnicos);
+  } catch (error) {
     next(error);
   }
 });

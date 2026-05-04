@@ -1,0 +1,375 @@
+---
+import PageLayout from '../../layout/PageLayout.astro';
+---
+
+<PageLayout title="Dashboard">
+  <!-- Loading State -->
+  <div id="dashboard-loading" class="min-h-screen flex items-center justify-center">
+    <div class="text-center">
+      <div class="w-12 h-12 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+      <p class="theme-text-secondary text-lg">Cargando dashboard...</p>
+    </div>
+  </div>
+
+  <!-- Dashboard Content (hidden until loaded) -->
+  <main id="dashboard-content" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
+      <div>
+        <h1 id="dashboard-greeting" class="text-2xl sm:text-3xl font-heading font-bold theme-text">
+          Bienvenido al Dashboard
+        </h1>
+        <p id="dashboard-role-badge" class="mt-1 theme-text-secondary text-sm"></p>
+      </div>
+      <div id="admin-actions" class="hidden">
+        <a href="/dashboard/tickets/nuevo" class="btn-brand text-sm sm:text-base">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          Crear Nuevo Ticket
+        </a>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+      <!-- Total -->
+      <div class="theme-card p-5 sm:p-6 relative overflow-hidden group">
+        <div class="absolute top-0 right-0 w-20 h-20 bg-brand-500/10 rounded-bl-full transition-all group-hover:w-24 group-hover:h-24"></div>
+        <div class="relative">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-xl bg-brand-500/15 flex items-center justify-center">
+              <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+              </svg>
+            </div>
+          </div>
+          <p class="text-3xl sm:text-4xl font-heading font-bold theme-text" id="stat-total">0</p>
+          <p class="text-xs sm:text-sm theme-text-muted mt-1">Total Tickets</p>
+        </div>
+      </div>
+
+      <!-- Pendientes -->
+      <div class="theme-card p-5 sm:p-6 relative overflow-hidden group">
+        <div class="absolute top-0 right-0 w-20 h-20 bg-warning/10 rounded-bl-full transition-all group-hover:w-24 group-hover:h-24"></div>
+        <div class="relative">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-xl bg-warning/15 flex items-center justify-center">
+              <svg class="w-5 h-5 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+          </div>
+          <p class="text-3xl sm:text-4xl font-heading font-bold text-warning" id="stat-pendientes">0</p>
+          <p class="text-xs sm:text-sm theme-text-muted mt-1">Pendientes</p>
+        </div>
+      </div>
+
+      <!-- En Proceso -->
+      <div class="theme-card p-5 sm:p-6 relative overflow-hidden group">
+        <div class="absolute top-0 right-0 w-20 h-20 bg-info/10 rounded-bl-full transition-all group-hover:w-24 group-hover:h-24"></div>
+        <div class="relative">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-xl bg-info/15 flex items-center justify-center">
+              <svg class="w-5 h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+              </svg>
+            </div>
+          </div>
+          <p class="text-3xl sm:text-4xl font-heading font-bold text-info" id="stat-en-proceso">0</p>
+          <p class="text-xs sm:text-sm theme-text-muted mt-1">En Proceso</p>
+        </div>
+      </div>
+
+      <!-- Resueltos -->
+      <div class="theme-card p-5 sm:p-6 relative overflow-hidden group">
+        <div class="absolute top-0 right-0 w-20 h-20 bg-success/10 rounded-bl-full transition-all group-hover:w-24 group-hover:h-24"></div>
+        <div class="relative">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-xl bg-success/15 flex items-center justify-center">
+              <svg class="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+          </div>
+          <p class="text-3xl sm:text-4xl font-heading font-bold text-success" id="stat-resueltos">0</p>
+          <p class="text-xs sm:text-sm theme-text-muted mt-1">Resueltos</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tickets Table -->
+    <div class="theme-card overflow-hidden">
+      <div class="px-6 py-5 border-b theme-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <h2 class="text-lg font-heading font-semibold theme-text">Tickets de Soporte</h2>
+        <div class="flex gap-2">
+          <select id="filter-status" class="theme-input text-sm !w-auto !py-2 !px-3 cursor-pointer">
+            <option value="todos">Todos</option>
+            <option value="pendiente">Pendientes</option>
+            <option value="en_proceso">En Proceso</option>
+            <option value="resuelto">Resueltos</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Desktop Table -->
+      <div class="hidden sm:block overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="theme-bg-secondary">
+              <th class="px-6 py-3 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider">#</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider">Cliente</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider">Descripción</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider">Técnico</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider">Estado</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider">Fecha</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tickets-table-body" class="divide-y theme-border">
+            <!-- Se llena dinámicamente con JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Mobile Cards -->
+      <div id="tickets-mobile-list" class="sm:hidden divide-y theme-border">
+        <!-- Se llena dinámicamente con JS -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="tickets-empty" class="hidden py-16 text-center">
+        <svg class="w-16 h-16 mx-auto theme-text-muted mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+        </svg>
+        <h3 class="text-lg font-heading font-semibold theme-text mb-1">No hay tickets</h3>
+        <p class="theme-text-muted">Aún no se han generado tickets de soporte.</p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // ═══════════════════════════════════════════════
+    // Dashboard - Lógica del cliente
+    // ═══════════════════════════════════════════════
+
+    const API_BASE = '/api';
+    let accessToken = localStorage.getItem('accessToken');
+    let currentUser = null;
+    let allTickets = [];
+
+    // ── Utilidades de autenticación ──
+    async function refreshAccessToken() {
+      try {
+        const res = await fetch(`${API_BASE}/auth/refresh`, {
+          credentials: 'include',
+        });
+        if (!res.ok) throw new Error('No se pudo refrescar el token');
+        const data = await res.json();
+        accessToken = data.accessToken;
+        localStorage.setItem('accessToken', accessToken);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    async function fetchWithAuth(url, options = {}) {
+      let res = await fetch(url, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+          ...options.headers,
+        },
+        credentials: 'include',
+      });
+
+      // Si el token expiró, intentar refrescar
+      if (res.status === 401 || res.status === 403) {
+        const refreshed = await refreshAccessToken();
+        if (refreshed) {
+          res = await fetch(url, {
+            ...options,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${accessToken}`,
+              ...options.headers,
+            },
+            credentials: 'include',
+          });
+        } else {
+          // No se pudo refrescar, redirigir al login
+          localStorage.removeItem('accessToken');
+          window.location.href = '/login';
+          return null;
+        }
+      }
+
+      return res;
+    }
+
+    // ── Funciones de renderizado ──
+    function getStatusBadge(estatus) {
+      const styles = {
+        pendiente: 'background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);',
+        en_proceso: 'background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3);',
+        resuelto: 'background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);',
+      };
+      const labels = {
+        pendiente: 'Pendiente',
+        en_proceso: 'En Proceso',
+        resuelto: 'Resuelto',
+      };
+      return `<span style="${styles[estatus]}" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold">${labels[estatus]}</span>`;
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '—';
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('es-VE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+
+    function renderTicketsTable(tickets) {
+      const tbody = document.getElementById('tickets-table-body');
+      const mobileList = document.getElementById('tickets-mobile-list');
+      const emptyState = document.getElementById('tickets-empty');
+
+      if (tickets.length === 0) {
+        tbody.innerHTML = '';
+        mobileList.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      const isAdmin = currentUser?.rol === 'admin' || currentUser?.rol === 'super_admin';
+
+      // Desktop rows
+      tbody.innerHTML = tickets.map(ticket => `
+        <tr class="hover:theme-bg-card-hover transition-colors cursor-pointer" onclick="window.location.href='/dashboard/tickets/${ticket.id}'">
+          <td class="px-6 py-4 text-sm font-semibold text-brand-500">#${ticket.id}</td>
+          <td class="px-6 py-4">
+            <div class="text-sm font-medium theme-text">${ticket.cliente_nombre}</div>
+            <div class="text-xs theme-text-muted">${ticket.cliente_telefono}</div>
+          </td>
+          <td class="px-6 py-4 text-sm theme-text-secondary max-w-xs truncate">${ticket.falla_descripcion}</td>
+          <td class="px-6 py-4 text-sm theme-text">${ticket.tecnico_nombre} ${ticket.tecnico_apellido}</td>
+          <td class="px-6 py-4">${getStatusBadge(ticket.estatus)}</td>
+          <td class="px-6 py-4 text-sm theme-text-muted">${formatDate(ticket.created_at)}</td>
+          <td class="px-6 py-4">
+            <a href="/dashboard/tickets/${ticket.id}" class="text-brand-500 hover:text-brand-400 text-sm font-medium transition-colors" onclick="event.stopPropagation()">
+              Ver detalle →
+            </a>
+          </td>
+        </tr>
+      `).join('');
+
+      // Mobile cards
+      mobileList.innerHTML = tickets.map(ticket => `
+        <a href="/dashboard/tickets/${ticket.id}" class="block p-4 hover:bg-[var(--bg-card-hover)] transition-colors">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-semibold text-brand-500">#${ticket.id}</span>
+            ${getStatusBadge(ticket.estatus)}
+          </div>
+          <p class="text-sm font-medium theme-text mb-1">${ticket.cliente_nombre}</p>
+          <p class="text-xs theme-text-muted mb-2 line-clamp-2">${ticket.falla_descripcion}</p>
+          <div class="flex items-center justify-between text-xs theme-text-muted">
+            <span>🔧 ${ticket.tecnico_nombre}</span>
+            <span>${formatDate(ticket.created_at)}</span>
+          </div>
+        </a>
+      `).join('');
+    }
+
+    function filterTickets(status) {
+      if (status === 'todos') {
+        renderTicketsTable(allTickets);
+      } else {
+        renderTicketsTable(allTickets.filter(t => t.estatus === status));
+      }
+    }
+
+    // ── Cerrar sesión ──
+    async function signOut() {
+      try {
+        await fetchWithAuth(`${API_BASE}/auth/signout`);
+      } catch { /* ignorar */ }
+      localStorage.removeItem('accessToken');
+      window.location.href = '/login';
+    }
+
+    // ── Inicialización del Dashboard ──
+    async function initDashboard() {
+      const loadingEl = document.getElementById('dashboard-loading');
+      const contentEl = document.getElementById('dashboard-content');
+
+      // 1. Verificar autenticación
+      if (!accessToken) {
+        const refreshed = await refreshAccessToken();
+        if (!refreshed) {
+          window.location.href = '/login';
+          return;
+        }
+      }
+
+      // 2. Obtener datos del usuario
+      const userRes = await fetchWithAuth(`${API_BASE}/auth/user`);
+      if (!userRes || !userRes.ok) {
+        window.location.href = '/login';
+        return;
+      }
+      currentUser = await userRes.json();
+
+      // 3. Actualizar saludo y rol
+      const greetingEl = document.getElementById('dashboard-greeting');
+      const roleBadgeEl = document.getElementById('dashboard-role-badge');
+      greetingEl.textContent = `¡Hola, ${currentUser.nombre}!`;
+
+      const isAdmin = currentUser.rol === 'admin' || currentUser.rol === 'super_admin';
+      roleBadgeEl.innerHTML = isAdmin
+        ? '<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold" style="background: rgba(227,30,36,0.15); color: #E31E24; border: 1px solid rgba(227,30,36,0.3);">👑 Administrador</span>'
+        : '<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold" style="background: rgba(59,130,246,0.15); color: #3b82f6; border: 1px solid rgba(59,130,246,0.3);">🔧 Técnico</span>';
+
+      // 4. Mostrar acciones de admin
+      if (isAdmin) {
+        document.getElementById('admin-actions').classList.remove('hidden');
+      }
+
+      // 5. Cargar estadísticas
+      const statsRes = await fetchWithAuth(`${API_BASE}/tickets/stats`);
+      if (statsRes && statsRes.ok) {
+        const stats = await statsRes.json();
+        document.getElementById('stat-total').textContent = stats.total;
+        document.getElementById('stat-pendientes').textContent = stats.pendientes;
+        document.getElementById('stat-en-proceso').textContent = stats.en_proceso;
+        document.getElementById('stat-resueltos').textContent = stats.resueltos;
+      }
+
+      // 6. Cargar tickets
+      const ticketsRes = await fetchWithAuth(`${API_BASE}/tickets`);
+      if (ticketsRes && ticketsRes.ok) {
+        allTickets = await ticketsRes.json();
+        renderTicketsTable(allTickets);
+      }
+
+      // 7. Mostrar contenido
+      loadingEl.classList.add('hidden');
+      contentEl.classList.remove('hidden');
+
+      // 8. Filtro de estatus
+      document.getElementById('filter-status').addEventListener('change', (e) => {
+        filterTickets(e.target.value);
+      });
+
+      // 9. Botón cerrar sesión
+      document.getElementById('btn-signout')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        signOut();
+      });
+    }
+
+    initDashboard();
+  </script>
+</PageLayout>

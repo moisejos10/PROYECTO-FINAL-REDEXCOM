@@ -70,12 +70,35 @@ const updateEmailVerify = (id) => {
   smtm.run(1, id);
 };
 
+/**
+ * Obtiene todos los usuarios con rol de técnico
+ * @returns {User[]}
+ */
+const findTecnicos = () => {
+  const smtm = db.prepare("SELECT id, nombre, apellido, email FROM users WHERE rol = 'tecnico'");
+  const tecnicos = smtm.all();
+  return tecnicos;
+};
+
+/**
+ * Busca un usuario por su ID
+ * @param {User['id']} id - El id del usuario
+ * @returns {User}
+ */
+const findUserById = (id) => {
+  const smtm = db.prepare('SELECT id, nombre, apellido, email, rol FROM users WHERE id = ?');
+  const user = smtm.get(id);
+  return user;
+};
+
 const userRepository = {
   createUser,
   deleteUserById,
   findUserByEmail,
   findUsers,
   updateEmailVerify,
+  findTecnicos,
+  findUserById,
 };
 
 export default userRepository;

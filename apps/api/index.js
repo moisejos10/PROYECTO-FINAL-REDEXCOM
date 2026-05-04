@@ -1,8 +1,10 @@
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import userRouter from './features/user/user.routes.js';
 import { ZodError } from 'zod';
 import { SqliteError } from 'better-sqlite3';
 import authRouter from './features/auth/auth.routes.js';
+import ticketRouter from './features/tickets/ticket.routes.js';
 import { authenticate } from './features/auth/auth.middlewares.js';
 import jwt from 'jsonwebtoken';
 import cors from 'cors';
@@ -10,12 +12,16 @@ import cors from 'cors';
 const app = express();
 const port = 3000;
 
-app.use(cors({ origin: ['http://localhost:4321'] }));
+app.use(cors({ origin: ['http://localhost:4321'], credentials: true }));
 app.use(express.json());
+app.use(cookieParser());
 
 // Rutas públicas
 app.use('/api/user', userRouter);
 app.use('/api/auth', authRouter);
+
+// Rutas protegidas (requieren autenticación)
+app.use('/api/tickets', ticketRouter);
 
 // Manejo global de errores
 app.use((err, req, res, next) => {

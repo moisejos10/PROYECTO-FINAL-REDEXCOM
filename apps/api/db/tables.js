@@ -45,7 +45,30 @@ const createVerificationCodesTable = () => {
   console.log('✅ Tabla de códigos de verificación creada!');
 };
 
+const createTicketsTable = () => {
+  const statement = db.prepare(`
+    CREATE TABLE IF NOT EXISTS tickets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      cliente_nombre TEXT NOT NULL,
+      cliente_direccion TEXT NOT NULL,
+      cliente_telefono TEXT NOT NULL,
+      falla_descripcion TEXT NOT NULL,
+      estatus TEXT NOT NULL DEFAULT 'pendiente',
+      fecha_visita TEXT,
+      tecnico_id INTEGER NOT NULL,
+      creador_id INTEGER NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (tecnico_id) REFERENCES users(id),
+      FOREIGN KEY (creador_id) REFERENCES users(id)
+    )
+  `);
+  statement.run();
+  console.log('✅ Tabla de tickets creada!');
+};
+
 const resetDb = () => {
+  db.prepare('DROP TABLE IF EXISTS tickets').run();
   db.prepare('DROP TABLE IF EXISTS verification_codes').run();
   db.prepare('DROP TABLE IF EXISTS sessions').run();
   db.prepare('DROP TABLE IF EXISTS users').run();
@@ -57,6 +80,7 @@ export const createTables = () => {
   createUsersTable();
   createSessionsTable();
   createVerificationCodesTable();
+  createTicketsTable();
   console.log('🚀 Todas las tablas creadas exitosamente!');
 };
 
