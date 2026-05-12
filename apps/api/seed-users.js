@@ -9,18 +9,18 @@ async function seed() {
     INSERT INTO users (nombre, apellido, email, password_hash, rol, email_verified)
     VALUES (?, ?, ?, ?, ?, ?)
   `);
-  adminStmt.run('Admin', 'Principal', 'admin@redexcom.com', passwordHash, 'admin', 1);
+  // adminStmt.run('Admin', 'Principal', 'admin@redexcom.com', passwordHash, 'admin', 1);
+
   
-  // Create technician
+  // Create technicia
   const techStmt = db.prepare(`
     INSERT INTO users (nombre, apellido, email, password_hash, rol, email_verified)
     VALUES (?, ?, ?, ?, ?, ?)
   `);
-  techStmt.run('Técnico', 'Uno', 'tecnico1@redexcom.com', passwordHash, 'tecnico', 1);
-  
-  console.log('✅ Usuarios de prueba creados:');
-  console.log('- Admin: admin@redexcom.com / Password123!');
-  console.log('- Técnico: tecnico1@redexcom.com / Password123!');
+  // techStmt.run('Técnico', 'Uno', 'tecnico1@redexcom.com', passwordHash, 'tecnico', 1);
+  techStmt.run('Marco', 'Perez', 'marcoperez123@gmail.com', passwordHash, 'tecnico', 1);
+  console.log(' Usuarios de prueba creados:');
+
 }
 
 seed();

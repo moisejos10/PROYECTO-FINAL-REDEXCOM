@@ -64,14 +64,13 @@ import PageLayout from "../layout/PageLayout.astro";
 </PageLayout>
 
 <script>
-  import ky from "ky";
   import { showToast } from '../components/notification/notification';
 
   // DOM Elements
-  const form = document.getElementById('login-form') as HTMLFormElement | null;
-  const emailInput = document.getElementById('email') as HTMLInputElement | null;
-  const passwordInput = document.getElementById('password') as HTMLInputElement | null;
-  const spinner = document.getElementById('spinner') as HTMLElement | null;
+  const form = document.getElementById('login-form');
+  const emailInput = document.getElementById('email');
+  const passwordInput = document.getElementById('password');
+  const spinner = document.getElementById('spinner');
 
   // Submit
   form?.addEventListener('submit', async (e) => {
@@ -92,14 +91,20 @@ import PageLayout from "../layout/PageLayout.astro";
 
     try {
       spinner?.classList.remove('hidden');
-      const data = await ky.post('/api/auth/login', { json: payload }).json() as {
-        accessToken: string;
-        userId: number;
-        email: string;
-        nombre: string;
-        apellido: string;
-        rol: string;
-      };
+      
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        credentials: 'include',
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        showToast({ type: 'error', text: data.error || 'Error al iniciar sesion' });
+        return;
+      }
       
       // Guardar el token en localStorage
       localStorage.setItem('accessToken', data.accessToken);
@@ -113,28 +118,22 @@ import PageLayout from "../layout/PageLayout.astro";
 
       showToast({
         type: 'success',
-        text: `¡Bienvenido/a, ${data.nombre}!`
+        text: `Bienvenido/a, ${data.nombre}!`
       });
 
-      // Redirigir al dashboard (por ahora al inicio)
+      // Redirigir al dashboard
       setTimeout(() => {
-        window.location.href = '/';
-      }, 1500);
+        window.location.href = '/dashboard';
+      }, 1000);
       
     } catch (error) {
-      let errorMsg = 'Error al iniciar sesión. Comprueba la conexión.';
-      if (error instanceof Error && 'response' in error) {
-        try {
-          const errorJson = await (error as any).response.json() as { error?: string };
-          if (errorJson.error) errorMsg = errorJson.error;
-        } catch(e) {}
-      }
       showToast({
         type: 'error',
-        text: errorMsg
+        text: 'Error al iniciar sesion. Comprueba la conexion.'
       });
     } finally {
       spinner?.classList.add('hidden');
     }
   });
 </script>
+

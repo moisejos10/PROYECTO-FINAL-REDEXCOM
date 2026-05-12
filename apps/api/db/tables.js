@@ -14,7 +14,7 @@ const createUsersTable = () => {
     )
   `);
   statement.run();
-  console.log('✅ Tabla de usuarios creada!');
+  console.log(' Tabla de usuarios creada!');
 };
 
 const createSessionsTable = () => {
@@ -27,7 +27,7 @@ const createSessionsTable = () => {
     )
   `);
   statement.run();
-  console.log('✅ Tabla de sesiones creada!');
+  console.log('Tabla de sesiones creada!');
 };
 
 const createVerificationCodesTable = () => {
@@ -42,7 +42,7 @@ const createVerificationCodesTable = () => {
     )
   `);
   statement.run();
-  console.log('✅ Tabla de códigos de verificación creada!');
+  console.log('Tabla de códigos de verificación creada!');
 };
 
 const createTicketsTable = () => {
@@ -64,7 +64,7 @@ const createTicketsTable = () => {
     )
   `);
   statement.run();
-  console.log('✅ Tabla de tickets creada!');
+  console.log('Tabla de tickets creada!');
 };
 
 const resetDb = () => {
@@ -72,7 +72,7 @@ const resetDb = () => {
   db.prepare('DROP TABLE IF EXISTS verification_codes').run();
   db.prepare('DROP TABLE IF EXISTS sessions').run();
   db.prepare('DROP TABLE IF EXISTS users').run();
-  console.log('🗑️  Tablas eliminadas');
+  console.log('Tablas eliminadas');
 };
 
 export const createTables = () => {
@@ -81,7 +81,7 @@ export const createTables = () => {
   createSessionsTable();
   createVerificationCodesTable();
   createTicketsTable();
-  console.log('🚀 Todas las tablas creadas exitosamente!');
+  console.log(' Todas las tablas creadas exitosamente!');
 };
 
 createTables();

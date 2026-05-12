@@ -1,0 +1,95 @@
+# Plan de Implementación: Sistema de Tickets Redexcom
+
+Este plan detalla los pasos a seguir para construir la funcionalidad de gestión de tickets de soporte técnico, incluyendo roles de usuario, base de datos, API, correos electrónicos y la interfaz gráfica.
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Creación del Primer Administrador:** Actualmente, al registrarse, los usuarios asumen el rol de `tecnico`. Para probar el sistema, ¿deseas que añadamos un script automático que convierta al primer usuario registrado en `administrador`, o prefieres que lo hagamos manualmente modificando la base de datos para tu cuenta?
+
+> [!IMPORTANT]
+> **Diseño de Interfaz:** Usaremos Astro y TailwindCSS para crear un diseño moderno y responsivo. Mantendremos los colores corporativos de Redexcom (azul oscuro, blanco, toques modernos).
+
+## Open Questions
+
+> [!NOTE]
+> 1. ¿El ticket debe incluir algún otro campo además de los mencionados (Nombre del cliente, Descripción de falla, Técnico asignado, Estado)? (Por ejemplo, Dirección del cliente, Teléfono, Fecha de visita programada).
+> 2. Cuando el estado del ticket cambie (ej. "En proceso" a "Resuelto"), ¿deseas que se envíe otro correo notificando al cliente o al administrador, o por ahora solo al crear el ticket para el técnico?
+
+## Proposed Changes
+
+### Backend: Base de Datos y Modelos
+
+#### [MODIFY] `apps/api/db/tables.js`
+- Añadir la creación de la tabla `tickets`:
+  - `id` (INTEGER PRIMARY KEY)
+  - `cliente_nombre` (TEXT)
+  - `falla_descripcion` (TEXT)
+  - `estatus` (TEXT - 'pendiente', 'en_proceso', 'resuelto')
+  - `tecnico_id` (INTEGER FOREIGN KEY -> users.id)
+  - `creador_id` (INTEGER FOREIGN KEY -> users.id)
+  - `created_at` / `updated_at` (DATETIME)
+
+### Backend: API y Lógica de Negocio
+
+#### [MODIFY] `apps/api/features/auth/auth.middlewares.js`
+- Crear y exportar el middleware `requireAdmin` que verificará si `req.user.rol === 'administrador'` antes de permitir el acceso a ciertas rutas.
+
+#### [MODIFY] `apps/api/features/user/user.routes.js` y `user.repository.js`
+- Añadir un endpoint `GET /api/user/tecnicos` (solo para admins) para obtener la lista de técnicos y poder poblar el selector (dropdown) al crear un ticket.
+
+#### [NEW] `apps/api/features/tickets/ticket.repository.js`
+- Funciones para interactuar con SQLite:
+  - `createTicket(data)`
+  - `getTickets(role, userId)`: Si es admin, retorna todos; si es técnico, solo los suyos.
+  - `getTicketById(id)`
+  - `updateTicketStatus(id, status)`
+  - `deleteTicket(id)`
+
+#### [NEW] `apps/api/features/tickets/ticket.schemas.js`
+- Esquemas de validación Zod para crear/editar tickets.
+
+#### [NEW] `apps/api/features/tickets/ticket.routes.js`
+- Endpoints Express protegidos con `requireAuth` y, cuando sea necesario, `requireAdmin`.
+- Al usar `POST /api/tickets`, se integrará el servicio `nodemailer` para enviar el correo al técnico asignado.
+
+#### [MODIFY] `apps/api/index.js`
+- Registrar las rutas de `ticketRoutes` en la aplicación principal.
+
+---
+
+### Frontend: Interfaz y Vistas (Astro + TailwindCSS)
+
+#### [NEW] `apps/client/src/pages/dashboard/index.astro`
+- **Dashboard Principal:**
+  - Tarjetas de resumen (Total generados, Pendientes, Resueltos).
+  - Tabla o tarjetas con la lista de tickets.
+  - Lógica para mostrar contenido distinto si el usuario es `administrador` o `tecnico`.
+  - Botón de "Crear Nuevo Ticket" (Solo visible para administrador).
+
+#### [NEW] `apps/client/src/pages/dashboard/tickets/nuevo.astro`
+- **Formulario de Creación (Solo Admin):**
+  - Campos: Nombre del cliente, Descripción de la falla.
+  - Selector (Dropdown): Lista de técnicos obtenidos de la API.
+  - Envío de datos al backend e integración de alertas.
+
+#### [NEW] `apps/client/src/pages/dashboard/tickets/[id].astro`
+- **Vista de Detalle del Ticket:**
+  - Mostrar la información completa.
+  - Si es Admin: Permitir cambiar el estado (ej. un dropdown para cambiar de "pendiente" a "resuelto") y un botón para eliminar.
+  - Si es Técnico: Vista de solo lectura para saber qué debe hacer y adónde debe ir.
+
+## Verification Plan
+
+### Automated Tests
+- Ejecutar la API y verificar la creación de las nuevas tablas.
+- Crear usuarios de prueba (un admin y un par de técnicos).
+- Hacer solicitudes a la API con diferentes roles para comprobar la seguridad (`requireAdmin`).
+
+### Manual Verification
+1. Ingresar al sistema como Administrador.
+2. Ir a crear un ticket, rellenar los datos, asignar un técnico y guardar.
+3. Verificar la consola para confirmar que el correo fue "enviado" al técnico (mediante nodemailer).
+4. Ver el Dashboard como Admin (se ven las estadísticas y el ticket).
+5. Cerrar sesión e ingresar como Técnico.
+6. Ver el Dashboard como Técnico (solo se ven sus tickets asignados y la vista es de solo lectura).

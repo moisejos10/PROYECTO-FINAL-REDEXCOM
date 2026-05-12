@@ -24,6 +24,7 @@ const links = getLinks(currentPath);
           links.map((link) => (
             <a
               href={link.to}
+              id={link.id || undefined}
               class="px-4 py-2 text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
             >
               {link.name}
@@ -127,6 +128,7 @@ const links = getLinks(currentPath);
         links.map((link) => (
           <a
             href={link.to}
+            id={link.id ? `mobile-${link.id}` : undefined}
             class="text-base font-medium text-white/80 hover:text-white transition-colors px-3 py-2.5 rounded-lg hover:bg-white/10"
           >
             {link.name}
@@ -256,4 +258,24 @@ const links = getLinks(currentPath);
   openBtn?.addEventListener("click", openSidebar);
   closeBtn?.addEventListener("click", closeSidebar);
   backdrop?.addEventListener("click", closeSidebar);
+
+  // ── Cerrar Sesión (centralizado) ──
+  async function handleSignOut(e) {
+    e.preventDefault();
+    const accessToken = localStorage.getItem('accessToken');
+    try {
+      await fetch('/api/auth/signout', {
+        headers: { 'Authorization': `Bearer ${accessToken}` },
+        credentials: 'include',
+      });
+    } catch { /* ignorar errores de red */ }
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('user');
+    window.location.href = '/';
+  }
+
+  // Desktop signout
+  document.getElementById('btn-signout')?.addEventListener('click', handleSignOut);
+  // Mobile signout
+  document.getElementById('mobile-btn-signout')?.addEventListener('click', handleSignOut);
 </script>

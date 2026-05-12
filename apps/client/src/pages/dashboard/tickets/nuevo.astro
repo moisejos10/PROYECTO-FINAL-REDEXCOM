@@ -41,10 +41,12 @@ import PageLayout from '../../../layout/PageLayout.astro';
           <div>
             <label for="cliente_nombre" class="theme-label block mb-1.5">Nombre Completo *</label>
             <input type="text" id="cliente_nombre" name="cliente_nombre" class="theme-input" placeholder="Ej: Juan Pérez" required />
+            <p id="error-nombre" class="text-xs mt-1 hidden" style="color: #ef4444;"></p>
           </div>
           <div>
             <label for="cliente_telefono" class="theme-label block mb-1.5">Teléfono *</label>
             <input type="tel" id="cliente_telefono" name="cliente_telefono" class="theme-input" placeholder="Ej: 0414-1234567" required />
+            <p id="error-telefono" class="text-xs mt-1 hidden" style="color: #ef4444;"></p>
           </div>
           <div class="sm:col-span-2">
             <label for="cliente_direccion" class="theme-label block mb-1.5">Dirección *</label>
@@ -65,8 +67,9 @@ import PageLayout from '../../../layout/PageLayout.astro';
         </h3>
         <div class="space-y-4">
           <div>
-            <label for="falla_descripcion" class="theme-label block mb-1.5">Descripción de la Falla *</label>
-            <textarea id="falla_descripcion" name="falla_descripcion" rows="4" class="theme-input resize-none" placeholder="Describe detalladamente el problema reportado por el cliente..." required></textarea>
+            <label for="falla_descripcion" class="theme-label block mb-1.5">Descripción de la Falla * <span id="char-count" class="font-normal theme-text-muted">(0/100)</span></label>
+            <textarea id="falla_descripcion" name="falla_descripcion" rows="4" maxlength="100" class="theme-input resize-none" placeholder="Describe detalladamente el problema reportado por el cliente..." required></textarea>
+            <p id="error-descripcion" class="text-xs mt-1 hidden" style="color: #ef4444;"></p>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -78,6 +81,7 @@ import PageLayout from '../../../layout/PageLayout.astro';
             <div>
               <label for="fecha_visita" class="theme-label block mb-1.5">Fecha de Visita Programada</label>
               <input type="date" id="fecha_visita" name="fecha_visita" class="theme-input cursor-pointer" />
+              <p id="error-fecha" class="text-xs mt-1 hidden" style="color: #ef4444;"></p>
             </div>
           </div>
         </div>
@@ -196,17 +200,80 @@ import PageLayout from '../../../layout/PageLayout.astro';
       loadingEl.classList.add('hidden');
       contentEl.classList.remove('hidden');
 
-      // 5. Manejar envío del formulario
+      // 5. Contador de caracteres para descripción
+      const descInput = document.getElementById('falla_descripcion');
+      const charCount = document.getElementById('char-count');
+      descInput.addEventListener('input', () => {
+        const len = descInput.value.length;
+        charCount.textContent = `(${len}/100)`;
+        charCount.style.color = len > 100 ? '#ef4444' : '';
+      });
+
+      // 6. Funciones de validación del cliente
+      function clearFieldErrors() {
+        ['error-nombre','error-telefono','error-descripcion','error-fecha'].forEach(id => {
+          const el = document.getElementById(id);
+          el.classList.add('hidden');
+          el.textContent = '';
+        });
+      }
+
+      function showFieldError(id, msg) {
+        const el = document.getElementById(id);
+        el.textContent = msg;
+        el.classList.remove('hidden');
+      }
+
+      function validateForm(data) {
+        let valid = true;
+        clearFieldErrors();
+
+        // Nombre: debe tener nombre y apellido, cada uno con mayúscula inicial
+        const partes = data.cliente_nombre.split(/\s+/).filter(Boolean);
+        if (partes.length < 2) {
+          showFieldError('error-nombre', 'Debe incluir nombre y apellido del cliente');
+          valid = false;
+        } else if (!partes.every(p => /^[A-ZÁÉÍÓÚÑ]/.test(p))) {
+          showFieldError('error-nombre', 'Cada nombre y apellido debe comenzar con letra mayúscula');
+          valid = false;
+        }
+
+        // Teléfono venezolano
+        const telLimpio = data.cliente_telefono.replace(/[\s\-\.\(\)]/g, '');
+        if (!/^(0(412|414|416|424|426)\d{7}|\+58(412|414|416|424|426)\d{7})$/.test(telLimpio)) {
+          showFieldError('error-telefono', 'Debe ser un teléfono venezolano válido (Ej: 0414-1234567)');
+          valid = false;
+        }
+
+        // Descripción max 100
+        if (data.falla_descripcion.length > 100) {
+          showFieldError('error-descripcion', 'La descripción no puede superar los 100 caracteres');
+          valid = false;
+        } else if (data.falla_descripcion.length < 10) {
+          showFieldError('error-descripcion', 'La descripción debe tener al menos 10 caracteres');
+          valid = false;
+        }
+
+        // Fecha de visita no anterior a hoy
+        if (data.fecha_visita) {
+          const hoy = new Date(); hoy.setHours(0,0,0,0);
+          const fv = new Date(data.fecha_visita + 'T00:00:00');
+          if (fv < hoy) {
+            showFieldError('error-fecha', 'La fecha de visita no puede ser anterior al día de hoy');
+            valid = false;
+          }
+        }
+
+        return valid;
+      }
+
+      // 7. Manejar envío del formulario
       document.getElementById('ticket-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('btn-submit');
         const btnText = document.getElementById('btn-submit-text');
         const errorEl = document.getElementById('form-error');
         errorEl.classList.add('hidden');
-
-        // Deshabilitar botón
-        btn.disabled = true;
-        btnText.textContent = 'Creando ticket...';
 
         const formData = {
           cliente_nombre: document.getElementById('cliente_nombre').value.trim(),
@@ -216,6 +283,13 @@ import PageLayout from '../../../layout/PageLayout.astro';
           tecnico_id: Number(document.getElementById('tecnico_id').value),
           fecha_visita: document.getElementById('fecha_visita').value || undefined,
         };
+
+        // Validar antes de enviar
+        if (!validateForm(formData)) return;
+
+        // Deshabilitar botón
+        btn.disabled = true;
+        btnText.textContent = 'Creando ticket...';
 
         try {
           const res = await fetchWithAuth(`${API_BASE}/tickets`, {

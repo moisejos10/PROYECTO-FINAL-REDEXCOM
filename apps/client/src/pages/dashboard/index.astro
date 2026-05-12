@@ -36,32 +36,32 @@ import PageLayout from '../../layout/PageLayout.astro';
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
       <!-- Total -->
       <div class="theme-card p-5 sm:p-6 relative overflow-hidden group">
-        <div class="absolute top-0 right-0 w-20 h-20 bg-brand-500/10 rounded-bl-full transition-all group-hover:w-24 group-hover:h-24"></div>
+        <div class="absolute top-0 right-0 w-20 h-20 rounded-bl-full transition-all group-hover:w-24 group-hover:h-24" style="background: rgba(245, 158, 11, 0.1);"></div>
         <div class="relative">
           <div class="flex items-center gap-3 mb-3">
-            <div class="w-10 h-10 rounded-xl bg-brand-500/15 flex items-center justify-center">
-              <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background: rgba(245, 158, 11, 0.15);">
+              <svg class="w-5 h-5" style="color: #f59e0b;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
               </svg>
             </div>
           </div>
-          <p class="text-3xl sm:text-4xl font-heading font-bold theme-text" id="stat-total">0</p>
+          <p class="text-3xl sm:text-4xl font-heading font-bold" style="color: #f59e0b;" id="stat-total">0</p>
           <p class="text-xs sm:text-sm theme-text-muted mt-1">Total Tickets</p>
         </div>
       </div>
 
       <!-- Pendientes -->
       <div class="theme-card p-5 sm:p-6 relative overflow-hidden group">
-        <div class="absolute top-0 right-0 w-20 h-20 bg-warning/10 rounded-bl-full transition-all group-hover:w-24 group-hover:h-24"></div>
+        <div class="absolute top-0 right-0 w-20 h-20 rounded-bl-full transition-all group-hover:w-24 group-hover:h-24" style="background: rgba(239, 68, 68, 0.1);"></div>
         <div class="relative">
           <div class="flex items-center gap-3 mb-3">
-            <div class="w-10 h-10 rounded-xl bg-warning/15 flex items-center justify-center">
-              <svg class="w-5 h-5 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background: rgba(239, 68, 68, 0.15);">
+              <svg class="w-5 h-5" style="color: #ef4444;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
             </div>
           </div>
-          <p class="text-3xl sm:text-4xl font-heading font-bold text-warning" id="stat-pendientes">0</p>
+          <p class="text-3xl sm:text-4xl font-heading font-bold" style="color: #ef4444;" id="stat-pendientes">0</p>
           <p class="text-xs sm:text-sm theme-text-muted mt-1">Pendientes</p>
         </div>
       </div>
@@ -127,14 +127,14 @@ import PageLayout from '../../layout/PageLayout.astro';
               <th class="px-6 py-3 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider">Acciones</th>
             </tr>
           </thead>
-          <tbody id="tickets-table-body" class="divide-y theme-border">
+          <tbody id="tickets-table-body" style="border: none;">
             <!-- Se llena dinámicamente con JS -->
           </tbody>
         </table>
       </div>
 
       <!-- Mobile Cards -->
-      <div id="tickets-mobile-list" class="sm:hidden divide-y theme-border">
+      <div id="tickets-mobile-list" class="sm:hidden">
         <!-- Se llena dinámicamente con JS -->
       </div>
 
@@ -213,7 +213,7 @@ import PageLayout from '../../layout/PageLayout.astro';
     // ── Funciones de renderizado ──
     function getStatusBadge(estatus) {
       const styles = {
-        pendiente: 'background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);',
+        pendiente: 'background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);',
         en_proceso: 'background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3);',
         resuelto: 'background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);',
       };
@@ -248,7 +248,7 @@ import PageLayout from '../../layout/PageLayout.astro';
 
       // Desktop rows
       tbody.innerHTML = tickets.map(ticket => `
-        <tr class="hover:theme-bg-card-hover transition-colors cursor-pointer" onclick="window.location.href='/dashboard/tickets/${ticket.id}'">
+        <tr class="hover:theme-bg-card-hover transition-colors cursor-pointer" style="border-bottom: 1px solid rgba(150,150,150,0.07);" onclick="window.location.href='/dashboard/tickets/${ticket.id}'">
           <td class="px-6 py-4 text-sm font-semibold text-brand-500">#${ticket.id}</td>
           <td class="px-6 py-4">
             <div class="text-sm font-medium theme-text">${ticket.cliente_nombre}</div>
