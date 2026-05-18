@@ -1,56 +1,125 @@
 ---
-import PageLayout from '../../../layout/PageLayout.astro';
+import PageLayout from "../../../layout/PageLayout.astro";
 ---
 
 <PageLayout title="Nuevo Ticket">
   <!-- Loading State -->
   <div id="page-loading" class="min-h-screen flex items-center justify-center">
     <div class="text-center">
-      <div class="w-12 h-12 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+      <div
+        class="w-12 h-12 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"
+      >
+      </div>
       <p class="theme-text-secondary text-lg">Verificando permisos...</p>
     </div>
   </div>
 
   <!-- Form Content -->
-  <main id="page-content" class="hidden max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    
+  <main
+    id="page-content"
+    class="hidden max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+  >
     <!-- Header -->
     <div class="mb-8">
-      <a href="/dashboard" class="inline-flex items-center gap-2 text-sm theme-text-muted hover:text-brand-500 transition-colors mb-4">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+      <a
+        href="/dashboard"
+        class="inline-flex items-center gap-2 text-sm theme-text-muted hover:text-brand-500 transition-colors mb-4"
+      >
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M15 19l-7-7 7-7"></path>
         </svg>
         Volver al Dashboard
       </a>
-      <h1 class="text-2xl sm:text-3xl font-heading font-bold theme-text">Crear Nuevo Ticket</h1>
-      <p class="mt-1 theme-text-secondary">Completa la información para generar un ticket de soporte técnico.</p>
+      <h1 class="text-2xl sm:text-3xl font-heading font-bold theme-text">
+        Crear Nuevo Ticket
+      </h1>
+      <p class="mt-1 theme-text-secondary">
+        Completa la información para generar un ticket de soporte técnico.
+      </p>
     </div>
 
     <!-- Form -->
     <form id="ticket-form" class="theme-card p-6 sm:p-8 space-y-6">
-      
       <!-- Sección: Datos del Cliente -->
       <div>
-        <h3 class="text-base font-heading font-semibold theme-text flex items-center gap-2 mb-4">
-          <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+        <h3
+          class="text-base font-heading font-semibold theme-text flex items-center gap-2 mb-4"
+        >
+          <svg
+            class="w-5 h-5 text-brand-500"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+            ></path>
           </svg>
           Datos del Cliente
         </h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label for="cliente_nombre" class="theme-label block mb-1.5">Nombre Completo *</label>
-            <input type="text" id="cliente_nombre" name="cliente_nombre" class="theme-input" placeholder="Ej: Juan Pérez" required />
-            <p id="error-nombre" class="text-xs mt-1 hidden" style="color: #ef4444;"></p>
+            <label for="cliente_nombre" class="theme-label block mb-1.5"
+              >Nombre Completo *</label
+            >
+            <input
+              type="text"
+              id="cliente_nombre"
+              name="cliente_nombre"
+              class="theme-input"
+              placeholder="Ej: Juan Pérez"
+              required
+            />
+            <p
+              id="error-nombre"
+              class="text-xs mt-1 hidden"
+              style="color: #ef4444;"
+            >
+            </p>
           </div>
           <div>
-            <label for="cliente_telefono" class="theme-label block mb-1.5">Teléfono *</label>
-            <input type="tel" id="cliente_telefono" name="cliente_telefono" class="theme-input" placeholder="Ej: 0414-1234567" required />
-            <p id="error-telefono" class="text-xs mt-1 hidden" style="color: #ef4444;"></p>
+            <label for="cliente_telefono" class="theme-label block mb-1.5"
+              >Teléfono *</label
+            >
+            <input
+              type="tel"
+              id="cliente_telefono"
+              name="cliente_telefono"
+              class="theme-input"
+              placeholder="Ej: 0414-1234567"
+              required
+            />
+            <p
+              id="error-telefono"
+              class="text-xs mt-1 hidden"
+              style="color: #ef4444;"
+            >
+            </p>
           </div>
           <div class="sm:col-span-2">
-            <label for="cliente_direccion" class="theme-label block mb-1.5">Dirección *</label>
-            <input type="text" id="cliente_direccion" name="cliente_direccion" class="theme-input" placeholder="Ej: Av. Principal, Edif. Centro, Piso 3, Apto 3A" required />
+            <label for="cliente_direccion" class="theme-label block mb-1.5"
+              >Dirección *</label
+            >
+            <input
+              type="text"
+              id="cliente_direccion"
+              name="cliente_direccion"
+              class="theme-input"
+              placeholder="Ej: Av. Principal, Edif. Centro, Piso 3, Apto 3A"
+              required
+            />
           </div>
         </div>
       </div>
@@ -59,29 +128,77 @@ import PageLayout from '../../../layout/PageLayout.astro';
 
       <!-- Sección: Información del Ticket -->
       <div>
-        <h3 class="text-base font-heading font-semibold theme-text flex items-center gap-2 mb-4">
-          <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+        <h3
+          class="text-base font-heading font-semibold theme-text flex items-center gap-2 mb-4"
+        >
+          <svg
+            class="w-5 h-5 text-brand-500"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+            ></path>
           </svg>
           Información del Ticket
         </h3>
         <div class="space-y-4">
           <div>
-            <label for="falla_descripcion" class="theme-label block mb-1.5">Descripción de la Falla * <span id="char-count" class="font-normal theme-text-muted">(0/100)</span></label>
-            <textarea id="falla_descripcion" name="falla_descripcion" rows="4" maxlength="100" class="theme-input resize-none" placeholder="Describe detalladamente el problema reportado por el cliente..." required></textarea>
-            <p id="error-descripcion" class="text-xs mt-1 hidden" style="color: #ef4444;"></p>
+            <label for="falla_descripcion" class="theme-label block mb-1.5"
+              >Descripción de la Falla * <span
+                id="char-count"
+                class="font-normal theme-text-muted">(0/100)</span
+              ></label
+            >
+            <textarea
+              id="falla_descripcion"
+              name="falla_descripcion"
+              rows="4"
+              maxlength="100"
+              class="theme-input resize-none"
+              placeholder="Describe detalladamente el problema reportado por el cliente..."
+              required></textarea>
+            <p
+              id="error-descripcion"
+              class="text-xs mt-1 hidden"
+              style="color: #ef4444;"
+            >
+            </p>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label for="tecnico_id" class="theme-label block mb-1.5">Técnico Asignado *</label>
-              <select id="tecnico_id" name="tecnico_id" class="theme-input cursor-pointer" required>
+              <label for="tecnico_id" class="theme-label block mb-1.5"
+                >Técnico Asignado *</label
+              >
+              <select
+                id="tecnico_id"
+                name="tecnico_id"
+                class="theme-input cursor-pointer"
+                required
+              >
                 <option value="">Seleccionar técnico...</option>
               </select>
             </div>
             <div>
-              <label for="fecha_visita" class="theme-label block mb-1.5">Fecha de Visita Programada</label>
-              <input type="date" id="fecha_visita" name="fecha_visita" class="theme-input cursor-pointer" />
-              <p id="error-fecha" class="text-xs mt-1 hidden" style="color: #ef4444;"></p>
+              <label for="fecha_visita" class="theme-label block mb-1.5"
+                >Fecha de Visita Programada</label
+              >
+              <input
+                type="date"
+                id="fecha_visita"
+                name="fecha_visita"
+                class="theme-input cursor-pointer"
+              />
+              <p
+                id="error-fecha"
+                class="text-xs mt-1 hidden"
+                style="color: #ef4444;"
+              >
+              </p>
             </div>
           </div>
         </div>
@@ -91,48 +208,71 @@ import PageLayout from '../../../layout/PageLayout.astro';
 
       <!-- Botones -->
       <div class="flex flex-col sm:flex-row gap-3 pt-2">
-        <button type="submit" id="btn-submit" class="btn-brand flex-1 sm:flex-none">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        <button
+          type="submit"
+          id="btn-submit"
+          class="btn-brand flex-1 sm:flex-none"
+        >
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"></path>
           </svg>
           <span id="btn-submit-text">Crear Ticket</span>
         </button>
-        <a href="/dashboard" class="btn-secondary flex-1 sm:flex-none text-center">Cancelar</a>
+        <a
+          href="/dashboard"
+          class="btn-secondary flex-1 sm:flex-none text-center">Cancelar</a
+        >
       </div>
 
       <!-- Error display -->
-      <div id="form-error" class="hidden rounded-xl p-4 text-sm" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444;"></div>
+      <div
+        id="form-error"
+        class="hidden rounded-xl p-4 text-sm"
+        style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444;"
+      >
+      </div>
     </form>
   </main>
 
   <script>
-    // ═══════════════════════════════════════════════
     // Nuevo Ticket - Lógica del cliente
-    // ═══════════════════════════════════════════════
 
-    const API_BASE = '/api';
-    let accessToken = localStorage.getItem('accessToken');
+    const API_BASE = "/api";
+    let accessToken = localStorage.getItem("accessToken");
 
     async function refreshAccessToken() {
       try {
-        const res = await fetch(`${API_BASE}/auth/refresh`, { credentials: 'include' });
-        if (!res.ok) throw new Error('Token refresh failed');
+        const res = await fetch(`${API_BASE}/auth/refresh`, {
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("Token refresh failed");
         const data = await res.json();
         accessToken = data.accessToken;
-        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem("accessToken", accessToken);
         return true;
-      } catch { return false; }
+      } catch {
+        return false;
+      }
     }
 
     async function fetchWithAuth(url, options = {}) {
       let res = await fetch(url, {
         ...options,
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
           ...options.headers,
         },
-        credentials: 'include',
+        credentials: "include",
       });
 
       if (res.status === 401 || res.status === 403) {
@@ -141,15 +281,15 @@ import PageLayout from '../../../layout/PageLayout.astro';
           res = await fetch(url, {
             ...options,
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
               ...options.headers,
             },
-            credentials: 'include',
+            credentials: "include",
           });
         } else {
-          localStorage.removeItem('accessToken');
-          window.location.href = '/login';
+          localStorage.removeItem("accessToken");
+          window.location.href = "/login";
           return null;
         }
       }
@@ -157,29 +297,35 @@ import PageLayout from '../../../layout/PageLayout.astro';
     }
 
     function showError(message) {
-      const errorEl = document.getElementById('form-error');
+      const errorEl = document.getElementById("form-error");
       errorEl.textContent = message;
-      errorEl.classList.remove('hidden');
-      errorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      errorEl.classList.remove("hidden");
+      errorEl.scrollIntoView({ behavior: "smooth", block: "center" });
     }
 
     async function initPage() {
-      const loadingEl = document.getElementById('page-loading');
-      const contentEl = document.getElementById('page-content');
+      const loadingEl = document.getElementById("page-loading");
+      const contentEl = document.getElementById("page-content");
 
       // 1. Verificar autenticación
       if (!accessToken) {
         const refreshed = await refreshAccessToken();
-        if (!refreshed) { window.location.href = '/login'; return; }
+        if (!refreshed) {
+          window.location.href = "/login";
+          return;
+        }
       }
 
       // 2. Verificar que sea admin
       const userRes = await fetchWithAuth(`${API_BASE}/auth/user`);
-      if (!userRes || !userRes.ok) { window.location.href = '/login'; return; }
+      if (!userRes || !userRes.ok) {
+        window.location.href = "/login";
+        return;
+      }
       const user = await userRes.json();
 
-      if (user.rol !== 'admin' && user.rol !== 'super_admin') {
-        window.location.href = '/dashboard';
+      if (user.rol !== "admin" && user.rol !== "super_admin") {
+        window.location.href = "/dashboard";
         return;
       }
 
@@ -187,9 +333,9 @@ import PageLayout from '../../../layout/PageLayout.astro';
       const tecnicosRes = await fetchWithAuth(`${API_BASE}/user/tecnicos`);
       if (tecnicosRes && tecnicosRes.ok) {
         const tecnicos = await tecnicosRes.json();
-        const select = document.getElementById('tecnico_id');
-        tecnicos.forEach(t => {
-          const option = document.createElement('option');
+        const select = document.getElementById("tecnico_id");
+        tecnicos.forEach((t) => {
+          const option = document.createElement("option");
           option.value = t.id;
           option.textContent = `${t.nombre} ${t.apellido}`;
           select.appendChild(option);
@@ -197,31 +343,36 @@ import PageLayout from '../../../layout/PageLayout.astro';
       }
 
       // 4. Mostrar contenido
-      loadingEl.classList.add('hidden');
-      contentEl.classList.remove('hidden');
+      loadingEl.classList.add("hidden");
+      contentEl.classList.remove("hidden");
 
       // 5. Contador de caracteres para descripción
-      const descInput = document.getElementById('falla_descripcion');
-      const charCount = document.getElementById('char-count');
-      descInput.addEventListener('input', () => {
+      const descInput = document.getElementById("falla_descripcion");
+      const charCount = document.getElementById("char-count");
+      descInput.addEventListener("input", () => {
         const len = descInput.value.length;
         charCount.textContent = `(${len}/100)`;
-        charCount.style.color = len > 100 ? '#ef4444' : '';
+        charCount.style.color = len > 100 ? "#ef4444" : "";
       });
 
       // 6. Funciones de validación del cliente
       function clearFieldErrors() {
-        ['error-nombre','error-telefono','error-descripcion','error-fecha'].forEach(id => {
+        [
+          "error-nombre",
+          "error-telefono",
+          "error-descripcion",
+          "error-fecha",
+        ].forEach((id) => {
           const el = document.getElementById(id);
-          el.classList.add('hidden');
-          el.textContent = '';
+          el.classList.add("hidden");
+          el.textContent = "";
         });
       }
 
       function showFieldError(id, msg) {
         const el = document.getElementById(id);
         el.textContent = msg;
-        el.classList.remove('hidden');
+        el.classList.remove("hidden");
       }
 
       function validateForm(data) {
@@ -231,35 +382,58 @@ import PageLayout from '../../../layout/PageLayout.astro';
         // Nombre: debe tener nombre y apellido, cada uno con mayúscula inicial
         const partes = data.cliente_nombre.split(/\s+/).filter(Boolean);
         if (partes.length < 2) {
-          showFieldError('error-nombre', 'Debe incluir nombre y apellido del cliente');
+          showFieldError(
+            "error-nombre",
+            "Debe incluir nombre y apellido del cliente",
+          );
           valid = false;
-        } else if (!partes.every(p => /^[A-ZÁÉÍÓÚÑ]/.test(p))) {
-          showFieldError('error-nombre', 'Cada nombre y apellido debe comenzar con letra mayúscula');
+        } else if (!partes.every((p) => /^[A-ZÁÉÍÓÚÑ]/.test(p))) {
+          showFieldError(
+            "error-nombre",
+            "Cada nombre y apellido debe comenzar con letra mayúscula",
+          );
           valid = false;
         }
 
         // Teléfono venezolano
-        const telLimpio = data.cliente_telefono.replace(/[\s\-\.\(\)]/g, '');
-        if (!/^(0(412|414|416|424|426)\d{7}|\+58(412|414|416|424|426)\d{7})$/.test(telLimpio)) {
-          showFieldError('error-telefono', 'Debe ser un teléfono venezolano válido (Ej: 0414-1234567)');
+        const telLimpio = data.cliente_telefono.replace(/[\s\-\.\(\)]/g, "");
+        if (
+          !/^(0(412|414|416|424|426)\d{7}|\+58(412|414|416|424|426)\d{7})$/.test(
+            telLimpio,
+          )
+        ) {
+          showFieldError(
+            "error-telefono",
+            "Debe ser un teléfono venezolano válido (Ej: 0414-1234567)",
+          );
           valid = false;
         }
 
         // Descripción max 100
         if (data.falla_descripcion.length > 100) {
-          showFieldError('error-descripcion', 'La descripción no puede superar los 100 caracteres');
+          showFieldError(
+            "error-descripcion",
+            "La descripción no puede superar los 100 caracteres",
+          );
           valid = false;
         } else if (data.falla_descripcion.length < 10) {
-          showFieldError('error-descripcion', 'La descripción debe tener al menos 10 caracteres');
+          showFieldError(
+            "error-descripcion",
+            "La descripción debe tener al menos 10 caracteres",
+          );
           valid = false;
         }
 
         // Fecha de visita no anterior a hoy
         if (data.fecha_visita) {
-          const hoy = new Date(); hoy.setHours(0,0,0,0);
-          const fv = new Date(data.fecha_visita + 'T00:00:00');
+          const hoy = new Date();
+          hoy.setHours(0, 0, 0, 0);
+          const fv = new Date(data.fecha_visita + "T00:00:00");
           if (fv < hoy) {
-            showFieldError('error-fecha', 'La fecha de visita no puede ser anterior al día de hoy');
+            showFieldError(
+              "error-fecha",
+              "La fecha de visita no puede ser anterior al día de hoy",
+            );
             valid = false;
           }
         }
@@ -268,60 +442,75 @@ import PageLayout from '../../../layout/PageLayout.astro';
       }
 
       // 7. Manejar envío del formulario
-      document.getElementById('ticket-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btn = document.getElementById('btn-submit');
-        const btnText = document.getElementById('btn-submit-text');
-        const errorEl = document.getElementById('form-error');
-        errorEl.classList.add('hidden');
+      document
+        .getElementById("ticket-form")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const btn = document.getElementById("btn-submit");
+          const btnText = document.getElementById("btn-submit-text");
+          const errorEl = document.getElementById("form-error");
+          errorEl.classList.add("hidden");
 
-        const formData = {
-          cliente_nombre: document.getElementById('cliente_nombre').value.trim(),
-          cliente_direccion: document.getElementById('cliente_direccion').value.trim(),
-          cliente_telefono: document.getElementById('cliente_telefono').value.trim(),
-          falla_descripcion: document.getElementById('falla_descripcion').value.trim(),
-          tecnico_id: Number(document.getElementById('tecnico_id').value),
-          fecha_visita: document.getElementById('fecha_visita').value || undefined,
-        };
+          const formData = {
+            cliente_nombre: document
+              .getElementById("cliente_nombre")
+              .value.trim(),
+            cliente_direccion: document
+              .getElementById("cliente_direccion")
+              .value.trim(),
+            cliente_telefono: document
+              .getElementById("cliente_telefono")
+              .value.trim(),
+            falla_descripcion: document
+              .getElementById("falla_descripcion")
+              .value.trim(),
+            tecnico_id: Number(document.getElementById("tecnico_id").value),
+            fecha_visita:
+              document.getElementById("fecha_visita").value || undefined,
+          };
 
-        // Validar antes de enviar
-        if (!validateForm(formData)) return;
+          // Validar antes de enviar
+          if (!validateForm(formData)) return;
 
-        // Deshabilitar botón
-        btn.disabled = true;
-        btnText.textContent = 'Creando ticket...';
+          // Deshabilitar botón
+          btn.disabled = true;
+          btnText.textContent = "Creando ticket...";
 
-        try {
-          const res = await fetchWithAuth(`${API_BASE}/tickets`, {
-            method: 'POST',
-            body: JSON.stringify(formData),
-          });
+          try {
+            const res = await fetchWithAuth(`${API_BASE}/tickets`, {
+              method: "POST",
+              body: JSON.stringify(formData),
+            });
 
-          if (!res) return;
+            if (!res) return;
 
-          if (res.ok) {
-            // Redirigir al dashboard
-            window.location.href = '/dashboard';
-          } else {
-            const data = await res.json();
-            showError(data.error || 'Error al crear el ticket');
+            if (res.ok) {
+              // Redirigir al dashboard
+              window.location.href = "/dashboard";
+            } else {
+              const data = await res.json();
+              showError(data.error || "Error al crear el ticket");
+              btn.disabled = false;
+              btnText.textContent = "Crear Ticket";
+            }
+          } catch (err) {
+            showError("Error de conexión. Inténtalo de nuevo.");
             btn.disabled = false;
-            btnText.textContent = 'Crear Ticket';
+            btnText.textContent = "Crear Ticket";
           }
-        } catch (err) {
-          showError('Error de conexión. Inténtalo de nuevo.');
-          btn.disabled = false;
-          btnText.textContent = 'Crear Ticket';
-        }
-      });
+        });
 
       // 6. Botón cerrar sesión
-      document.getElementById('btn-signout')?.addEventListener('click', async (e) => {
-        e.preventDefault();
-        try { await fetchWithAuth(`${API_BASE}/auth/signout`); } catch {}
-        localStorage.removeItem('accessToken');
-        window.location.href = '/login';
-      });
+      document
+        .getElementById("btn-signout")
+        ?.addEventListener("click", async (e) => {
+          e.preventDefault();
+          try {
+            await fetchWithAuth(`${API_BASE}/auth/signout`);
+          } catch {}
+          localStorage.removeItem("accessToken");
+          window.location.href = "/login";
+        });
     }
 
     initPage();
