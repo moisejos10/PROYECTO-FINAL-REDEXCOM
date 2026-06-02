@@ -8,7 +8,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "node --env-file=.env --watch index.js",
-    "tables:create": "node --env-file=.env ./db/tables.js"
+    "tables:create": "node --env-file=.env ./db/tables.js",
+    "reset-admin": "node --env-file=.env reset-admin.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

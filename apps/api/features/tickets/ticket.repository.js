@@ -142,6 +142,79 @@ const getTicketStatsByTecnico = (tecnicoId) => {
   };
 };
 
+/**
+ * Obtiene todos los tickets de la semana actual (lunes a domingo) — Admin
+ * @returns {Array}
+ */
+const findWeeklyTickets = () => {
+  const smtm = db.prepare(`
+    SELECT tickets.*, users.nombre AS tecnico_nombre, users.apellido AS tecnico_apellido
+    FROM tickets
+    INNER JOIN users ON tickets.tecnico_id = users.id
+    WHERE tickets.created_at >= date('now', 'weekday 1', '-7 days')
+      AND tickets.created_at < date('now', 'weekday 1')
+    ORDER BY tickets.created_at DESC
+  `);
+  return smtm.all();
+};
+
+/**
+ * Obtiene los tickets de la semana actual para un técnico específico
+ * @param {number} tecnicoId
+ * @returns {Array}
+ */
+const findWeeklyTicketsByTecnico = (tecnicoId) => {
+  const smtm = db.prepare(`
+    SELECT tickets.*, users.nombre AS tecnico_nombre, users.apellido AS tecnico_apellido
+    FROM tickets
+    INNER JOIN users ON tickets.tecnico_id = users.id
+    WHERE tickets.tecnico_id = ?
+      AND tickets.created_at >= date('now', 'weekday 1', '-7 days')
+      AND tickets.created_at < date('now', 'weekday 1')
+    ORDER BY tickets.created_at DESC
+  `);
+  return smtm.all(tecnicoId);
+};
+
+/**
+ * Estadísticas de tickets de la semana actual — Admin
+ * @returns {Object}
+ */
+const getWeeklyTicketStats = () => {
+  const weekFilter = "AND created_at >= date('now', 'weekday 1', '-7 days') AND created_at < date('now', 'weekday 1')";
+  const total = db.prepare(`SELECT COUNT(*) AS count FROM tickets WHERE 1=1 ${weekFilter}`).get();
+  const pendientes = db.prepare(`SELECT COUNT(*) AS count FROM tickets WHERE estatus = 'pendiente' ${weekFilter}`).get();
+  const enProceso = db.prepare(`SELECT COUNT(*) AS count FROM tickets WHERE estatus = 'en_proceso' ${weekFilter}`).get();
+  const resueltos = db.prepare(`SELECT COUNT(*) AS count FROM tickets WHERE estatus = 'resuelto' ${weekFilter}`).get();
+
+  return {
+    total: total.count,
+    pendientes: pendientes.count,
+    en_proceso: enProceso.count,
+    resueltos: resueltos.count,
+  };
+};
+
+/**
+ * Estadísticas de tickets de la semana actual por técnico
+ * @param {number} tecnicoId
+ * @returns {Object}
+ */
+const getWeeklyTicketStatsByTecnico = (tecnicoId) => {
+  const weekFilter = "AND created_at >= date('now', 'weekday 1', '-7 days') AND created_at < date('now', 'weekday 1')";
+  const total = db.prepare(`SELECT COUNT(*) AS count FROM tickets WHERE tecnico_id = ? ${weekFilter}`).get(tecnicoId);
+  const pendientes = db.prepare(`SELECT COUNT(*) AS count FROM tickets WHERE estatus = 'pendiente' AND tecnico_id = ? ${weekFilter}`).get(tecnicoId);
+  const enProceso = db.prepare(`SELECT COUNT(*) AS count FROM tickets WHERE estatus = 'en_proceso' AND tecnico_id = ? ${weekFilter}`).get(tecnicoId);
+  const resueltos = db.prepare(`SELECT COUNT(*) AS count FROM tickets WHERE estatus = 'resuelto' AND tecnico_id = ? ${weekFilter}`).get(tecnicoId);
+
+  return {
+    total: total.count,
+    pendientes: pendientes.count,
+    en_proceso: enProceso.count,
+    resueltos: resueltos.count,
+  };
+};
+
 const ticketRepository = {
   createTicket,
   findAllTickets,
@@ -151,6 +224,10 @@ const ticketRepository = {
   deleteTicket,
   getTicketStats,
   getTicketStatsByTecnico,
+  findWeeklyTickets,
+  findWeeklyTicketsByTecnico,
+  getWeeklyTicketStats,
+  getWeeklyTicketStatsByTecnico,
 };
 
 export default ticketRepository;

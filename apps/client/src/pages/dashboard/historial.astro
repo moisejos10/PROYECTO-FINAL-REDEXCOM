@@ -1,0 +1,526 @@
+---
+export const prerender = false;
+import PageLayout from "../../layout/PageLayout.astro";
+---
+
+<PageLayout title="Historial de Tickets">
+  <!-- Loading State -->
+  <div
+    id="historial-loading"
+    class="min-h-screen flex items-center justify-center"
+  >
+    <div class="text-center">
+      <div
+        class="w-12 h-12 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"
+      >
+      </div>
+      <p class="theme-text-secondary text-lg">Cargando historial...</p>
+    </div>
+  </div>
+
+  <!-- Historial Content -->
+  <main
+    id="historial-content"
+    class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+  >
+    <!-- Header -->
+    <div
+      class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4"
+    >
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-heading font-bold theme-text">
+          Historial de Tickets
+        </h1>
+        <p class="mt-1 theme-text-secondary text-sm">
+          Todos los tickets generados en el sistema
+        </p>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="theme-card p-4 sm:p-6 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <svg
+            class="w-5 h-5 text-brand-500"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"></path>
+          </svg>
+          <h3 class="text-sm font-heading font-semibold theme-text">
+            Filtros de Búsqueda
+          </h3>
+        </div>
+        <button
+          id="btn-clear-filters"
+          title="Limpiar filtros"
+          class="hidden text-brand-500 hover:text-brand-600 active:scale-95 transition-all duration-200 cursor-pointer p-1.5 rounded-md mr-1"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-5 h-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M4 4h16v2l-6 6.5v6.5l-4 2v-8.5L4 6V4z"></path>
+            <line x1="17" y1="14" x2="22" y2="19"></line>
+            <line x1="22" y1="14" x2="17" y2="19"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Filtro por Número -->
+        <div>
+          <label for="filter-id" class="theme-label block mb-1.5"
+            >N° de Ticket</label
+          >
+          <input
+            type="number"
+            id="filter-id"
+            placeholder="Ej: 1, 2, 3..."
+            class="theme-input text-sm"
+            min="1"
+          />
+        </div>
+
+        <!-- Filtro por Estatus -->
+        <div>
+          <label for="filter-status" class="theme-label block mb-1.5"
+            >Estatus</label
+          >
+          <select id="filter-status" class="theme-input text-sm cursor-pointer">
+            <option value="todos">Todos</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="en_proceso">En Proceso</option>
+            <option value="resuelto">Resuelto</option>
+          </select>
+        </div>
+
+        <!-- Filtro por Técnico (solo admin) -->
+        <div id="filter-tecnico-container" class="hidden">
+          <label for="filter-tecnico" class="theme-label block mb-1.5"
+            >Técnico</label
+          >
+          <select
+            id="filter-tecnico"
+            class="theme-input text-sm cursor-pointer"
+          >
+            <option value="todos">Todos</option>
+            <!-- Se llena dinámicamente -->
+          </select>
+        </div>
+
+        <!-- Filtro por Fecha de Apertura -->
+        <div>
+          <label for="filter-fecha" class="theme-label block mb-1.5"
+            >Fecha de Apertura</label
+          >
+          <input
+            type="date"
+            id="filter-fecha"
+            class="theme-input text-sm cursor-pointer"
+          />
+        </div>
+      </div>
+      <!-- Footer de filtros -->
+      <div class="mt-4">
+        <p id="results-count" class="text-xs theme-text-muted"></p>
+      </div>
+    </div>
+
+    <!-- Tickets Table -->
+    <div class="theme-card overflow-hidden">
+      <!-- Desktop Table -->
+      <div class="hidden sm:block overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="theme-bg-secondary">
+              <th
+                class="px-6 py-3 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider"
+                >#</th
+              >
+              <th
+                class="px-6 py-3 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider"
+                >Cliente</th
+              >
+              <th
+                class="px-6 py-3 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider"
+                >Descripción</th
+              >
+              <th
+                class="px-6 py-3 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider"
+                >Técnico</th
+              >
+              <th
+                class="px-6 py-3 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider"
+                >Estado</th
+              >
+              <th
+                class="px-6 py-3 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider"
+                >Fecha</th
+              >
+              <th
+                class="px-6 py-3 text-center text-xs font-semibold theme-text-muted uppercase tracking-wider"
+                >Detalle</th
+              >
+            </tr>
+          </thead>
+          <tbody id="historial-table-body" style="border: none;"> </tbody>
+        </table>
+      </div>
+
+      <!-- Mobile Cards -->
+      <div id="historial-mobile-list" class="sm:hidden"></div>
+
+      <!-- Empty State -->
+      <div id="historial-empty" class="hidden py-16 text-center">
+        <svg
+          class="w-16 h-16 mx-auto theme-text-muted mb-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.5"
+            d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+          ></path>
+        </svg>
+        <h3 class="text-lg font-heading font-semibold theme-text mb-1">
+          No se encontraron tickets
+        </h3>
+        <p class="theme-text-muted">
+          No hay tickets que coincidan con los filtros seleccionados.
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // ── Historial de Tickets — Lógica del cliente ──
+
+    const API_BASE = "/api";
+    let accessToken = localStorage.getItem("accessToken");
+    let currentUser = null;
+    let allTickets = [];
+    let tecnicos = [];
+
+    // ── Guardia de autenticación inmediata ──
+    if (!accessToken) {
+      window.location.replace("/");
+    }
+
+    // ── Utilidades de autenticación ──
+    async function refreshAccessToken() {
+      try {
+        const res = await fetch(`${API_BASE}/auth/refresh`, {
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("Token refresh failed");
+        const data = await res.json();
+        accessToken = data.accessToken;
+        localStorage.setItem("accessToken", accessToken);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    async function fetchWithAuth(url, options = {}) {
+      let res = await fetch(url, {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+          ...options.headers,
+        },
+        credentials: "include",
+      });
+
+      if (res.status === 401 || res.status === 403) {
+        const refreshed = await refreshAccessToken();
+        if (refreshed) {
+          res = await fetch(url, {
+            ...options,
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+              ...options.headers,
+            },
+            credentials: "include",
+          });
+        } else {
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("user");
+          window.location.replace("/");
+          return null;
+        }
+      }
+      return res;
+    }
+
+    // ── Funciones de renderizado ──
+    function getStatusBadge(estatus) {
+      const styles = {
+        pendiente:
+          "background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);",
+        en_proceso:
+          "background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3);",
+        resuelto:
+          "background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);",
+      };
+      const labels = {
+        pendiente: "Pendiente",
+        en_proceso: "En Proceso",
+        resuelto: "Resuelto",
+      };
+      return `<span style="${styles[estatus]}" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold">${labels[estatus]}</span>`;
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return "—";
+      const date = new Date(dateStr);
+      return date.toLocaleDateString("es-VE", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+    }
+
+    function renderTicketsTable(tickets) {
+      const tbody = document.getElementById("historial-table-body");
+      const mobileList = document.getElementById("historial-mobile-list");
+      const emptyState = document.getElementById("historial-empty");
+      const resultsCount = document.getElementById("results-count");
+
+      // Actualizar contador
+      resultsCount.textContent = `${tickets.length} ticket${tickets.length !== 1 ? "s" : ""} encontrado${tickets.length !== 1 ? "s" : ""}`;
+
+      if (tickets.length === 0) {
+        tbody.innerHTML = "";
+        mobileList.innerHTML = "";
+        emptyState.classList.remove("hidden");
+        return;
+      }
+
+      emptyState.classList.add("hidden");
+
+      // Desktop rows
+      tbody.innerHTML = tickets
+        .map(
+          (ticket) => `
+        <tr class="hover:theme-bg-card-hover transition-colors cursor-pointer" style="border-bottom: 1px solid rgba(150,150,150,0.07);" onclick="window.location.href='/dashboard/tickets/${ticket.id}'">
+          <td class="px-6 py-4 text-sm font-semibold text-brand-500">#${ticket.id}</td>
+          <td class="px-6 py-4">
+            <div class="text-sm font-medium theme-text">${ticket.cliente_nombre}</div>
+            <div class="text-xs theme-text-muted">${ticket.cliente_telefono}</div>
+          </td>
+          <td class="px-6 py-4 text-sm theme-text-secondary max-w-xs truncate">${ticket.falla_descripcion}</td>
+          <td class="px-6 py-4 text-sm theme-text">${ticket.tecnico_nombre} ${ticket.tecnico_apellido}</td>
+          <td class="px-6 py-4">${getStatusBadge(ticket.estatus)}</td>
+          <td class="px-6 py-4 text-sm theme-text-muted">${formatDate(ticket.created_at)}</td>
+          <td class="px-6 py-4 text-center">
+            <a href="/dashboard/tickets/${ticket.id}" class="text-brand-500 hover:text-brand-600 inline-flex items-center justify-center p-1.5 rounded-full hover:bg-brand-500/10 active:scale-95 transition-all duration-200" title="Ver detalle" onclick="event.stopPropagation()">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </a>
+          </td>
+        </tr>
+      `,
+        )
+        .join("");
+
+      // Mobile cards
+      mobileList.innerHTML = tickets
+        .map(
+          (ticket) => `
+        <a href="/dashboard/tickets/${ticket.id}" class="block p-4 hover:bg-[var(--bg-card-hover)] transition-colors" style="border-bottom: 1px solid rgba(150,150,150,0.07);">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-semibold text-brand-500">#${ticket.id}</span>
+            ${getStatusBadge(ticket.estatus)}
+          </div>
+          <p class="text-sm font-medium theme-text mb-1">${ticket.cliente_nombre}</p>
+          <p class="text-xs theme-text-muted mb-2 line-clamp-2">${ticket.falla_descripcion}</p>
+          <div class="flex items-center justify-between text-xs theme-text-muted">
+            <span>🔧 ${ticket.tecnico_nombre}</span>
+            <span>${formatDate(ticket.created_at)}</span>
+          </div>
+        </a>
+      `,
+        )
+        .join("");
+    }
+
+    // ── Filtros ──
+    function hasActiveFilters() {
+      const filterId = document.getElementById("filter-id").value.trim();
+      const filterStatus = document.getElementById("filter-status").value;
+      const filterFecha = document.getElementById("filter-fecha").value;
+      const filterTecnicoEl = document.getElementById("filter-tecnico");
+      const filterTecnico = filterTecnicoEl ? filterTecnicoEl.value : "todos";
+      return (
+        filterId ||
+        filterStatus !== "todos" ||
+        filterTecnico !== "todos" ||
+        filterFecha
+      );
+    }
+
+    function applyFilters() {
+      const filterId = document.getElementById("filter-id").value.trim();
+      const filterStatus = document.getElementById("filter-status").value;
+      const filterFecha = document.getElementById("filter-fecha").value;
+      const filterTecnicoEl = document.getElementById("filter-tecnico");
+      const filterTecnico = filterTecnicoEl ? filterTecnicoEl.value : "todos";
+
+      let filtered = [...allTickets];
+
+      // Filtrar por número de ticket
+      if (filterId) {
+        filtered = filtered.filter((t) => String(t.id) === filterId);
+      }
+
+      // Filtrar por estatus
+      if (filterStatus !== "todos") {
+        filtered = filtered.filter((t) => t.estatus === filterStatus);
+      }
+
+      // Filtrar por técnico
+      if (filterTecnico !== "todos") {
+        filtered = filtered.filter(
+          (t) => String(t.tecnico_id) === filterTecnico,
+        );
+      }
+
+      // Filtrar por fecha de apertura
+      if (filterFecha) {
+        filtered = filtered.filter((t) => {
+          const ticketDate = new Date(t.created_at).toISOString().split("T")[0];
+          return ticketDate === filterFecha;
+        });
+      }
+
+      // Mostrar u ocultar botón limpiar
+      const clearBtn = document.getElementById("btn-clear-filters");
+      if (hasActiveFilters()) {
+        clearBtn.classList.remove("hidden");
+      } else {
+        clearBtn.classList.add("hidden");
+      }
+
+      renderTicketsTable(filtered);
+    }
+
+    function clearFilters() {
+      document.getElementById("filter-id").value = "";
+      document.getElementById("filter-status").value = "todos";
+      document.getElementById("filter-fecha").value = "";
+      const filterTecnicoEl = document.getElementById("filter-tecnico");
+      if (filterTecnicoEl) filterTecnicoEl.value = "todos";
+      document.getElementById("btn-clear-filters").classList.add("hidden");
+      renderTicketsTable(allTickets);
+    }
+
+    // ── Inicialización ──
+    async function initHistorial() {
+      const loadingEl = document.getElementById("historial-loading");
+      const contentEl = document.getElementById("historial-content");
+
+      // 1. Verificar autenticación
+      if (!accessToken) {
+        const refreshed = await refreshAccessToken();
+        if (!refreshed) {
+          window.location.replace("/");
+          return;
+        }
+      }
+
+      // 2. Obtener datos del usuario
+      const userRes = await fetchWithAuth(`${API_BASE}/auth/user`);
+      if (!userRes || !userRes.ok) {
+        window.location.replace("/");
+        return;
+      }
+      currentUser = await userRes.json();
+
+      const isAdmin =
+        currentUser.rol === "admin" || currentUser.rol === "super_admin";
+
+      // 3. Si es admin, cargar la lista de técnicos para el filtro
+      if (isAdmin) {
+        const tecnicosRes = await fetchWithAuth(`${API_BASE}/user/tecnicos`);
+        if (tecnicosRes && tecnicosRes.ok) {
+          tecnicos = await tecnicosRes.json();
+          const filterTecnicoContainer = document.getElementById(
+            "filter-tecnico-container",
+          );
+          const filterTecnicoSelect = document.getElementById("filter-tecnico");
+          filterTecnicoContainer.classList.remove("hidden");
+
+          tecnicos.forEach((tec) => {
+            const option = document.createElement("option");
+            option.value = String(tec.id);
+            option.textContent = `${tec.nombre} ${tec.apellido}`;
+            filterTecnicoSelect.appendChild(option);
+          });
+        }
+      }
+
+      // 5. Cargar todos los tickets
+      const ticketsRes = await fetchWithAuth(`${API_BASE}/tickets`);
+      if (ticketsRes && ticketsRes.ok) {
+        allTickets = await ticketsRes.json();
+        renderTicketsTable(allTickets);
+      }
+
+      // 6. Mostrar contenido
+      loadingEl.classList.add("hidden");
+      contentEl.classList.remove("hidden");
+
+      // 7. Event listeners para filtros
+      document
+        .getElementById("filter-id")
+        .addEventListener("input", applyFilters);
+      document
+        .getElementById("filter-status")
+        .addEventListener("change", applyFilters);
+      document
+        .getElementById("filter-fecha")
+        .addEventListener("change", applyFilters);
+      const filterTecnicoEl = document.getElementById("filter-tecnico");
+      if (filterTecnicoEl)
+        filterTecnicoEl.addEventListener("change", applyFilters);
+      document
+        .getElementById("btn-clear-filters")
+        .addEventListener("click", clearFilters);
+
+      // 8. Cerrar sesión
+      document
+        .getElementById("btn-signout")
+        ?.addEventListener("click", async (e) => {
+          e.preventDefault();
+          try {
+            await fetchWithAuth(`${API_BASE}/auth/signout`);
+          } catch {}
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("user");
+          window.location.replace("/");
+        });
+    }
+
+    initHistorial();
+  </script>
+</PageLayout>

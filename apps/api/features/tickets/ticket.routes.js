@@ -4,12 +4,13 @@ import ticketRepository from './ticket.repository.js';
 import userRepository from '../user/user.repository.js';
 import { authenticate, requireAdmin } from '../auth/auth.middlewares.js';
 import nodemailerService from '../../services/nodemailer.js';
+import { email, ficha, badge, btn } from '../../services/emailTemplate.js';
 
 const ticketRouter = Router();
 
-// ══════════════════════════════════════════════════
+
 // Todas las rutas de tickets requieren autenticación
-// ══════════════════════════════════════════════════
+
 ticketRouter.use(authenticate);
 
 // ── GET /api/tickets/stats ── Estadísticas del dashboard
@@ -24,6 +25,40 @@ ticketRouter.get('/stats', async (req, res, next) => {
     }
 
     return res.status(200).json(stats);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ── GET /api/tickets/weekly/stats ── Estadísticas semanales
+ticketRouter.get('/weekly/stats', async (req, res, next) => {
+  try {
+    let stats;
+
+    if (req.user.rol === 'admin' || req.user.rol === 'super_admin') {
+      stats = ticketRepository.getWeeklyTicketStats();
+    } else {
+      stats = ticketRepository.getWeeklyTicketStatsByTecnico(req.user.id);
+    }
+
+    return res.status(200).json(stats);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ── GET /api/tickets/weekly ── Tickets de la semana actual
+ticketRouter.get('/weekly', async (req, res, next) => {
+  try {
+    let tickets;
+
+    if (req.user.rol === 'admin' || req.user.rol === 'super_admin') {
+      tickets = ticketRepository.findWeeklyTickets();
+    } else {
+      tickets = ticketRepository.findWeeklyTicketsByTecnico(req.user.id);
+    }
+
+    return res.status(200).json(tickets);
   } catch (error) {
     next(error);
   }
@@ -93,58 +128,21 @@ ticketRouter.post('/', requireAdmin, async (req, res, next) => {
     try {
       await nodemailerService.sendMail({
         to: tecnico.email,
-        subject: 'Nuevo Ticket Asignado - Corporación RedexCom',
-        html: `
-          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0f172a; border-radius: 16px; overflow: hidden;">
-            <div style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); padding: 32px; text-align: center;">
-              <h1 style="color: #ffffff; margin: 0; font-size: 28px;">Corporación RedexCom</h1>
-              <p style="color: #bfdbfe; margin: 8px 0 0 0; font-size: 14px;">Sistema de Soporte Técnico</p>
-            </div>
-            <div style="padding: 32px; color: #e2e8f0;">
-              <h2 style="color: #ffffff; margin-top: 0;">🎫 Nuevo Ticket Asignado</h2>
-              <p style="font-size: 16px; line-height: 1.6;">Hola ${tecnico.nombre}, se te ha asignado un nuevo ticket de soporte:</p>
-              
-              <div style="background: #1e293b; border: 2px solid #3b82f6; border-radius: 12px; padding: 24px; margin: 24px 0;">
-                <table style="width: 100%; border-collapse: collapse;">
-                  <tr>
-                    <td style="padding: 8px 0; color: #94a3b8; font-size: 14px;">Ticket #</td>
-                    <td style="padding: 8px 0; color: #60a5fa; font-weight: 600; font-size: 18px;">${createdTicket.id}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px 0; color: #94a3b8; font-size: 14px;">Cliente</td>
-                    <td style="padding: 8px 0; color: #ffffff;">${createdTicket.cliente_nombre}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px 0; color: #94a3b8; font-size: 14px;">Dirección</td>
-                    <td style="padding: 8px 0; color: #ffffff;">${createdTicket.cliente_direccion}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px 0; color: #94a3b8; font-size: 14px;">Teléfono</td>
-                    <td style="padding: 8px 0; color: #ffffff;">${createdTicket.cliente_telefono}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px 0; color: #94a3b8; font-size: 14px;">Descripción</td>
-                    <td style="padding: 8px 0; color: #ffffff;">${createdTicket.falla_descripcion}</td>
-                  </tr>
-                  ${createdTicket.fecha_visita ? `
-                  <tr>
-                    <td style="padding: 8px 0; color: #94a3b8; font-size: 14px;">Fecha de Visita</td>
-                    <td style="padding: 8px 0; color: #f59e0b; font-weight: 600;">${createdTicket.fecha_visita}</td>
-                  </tr>
-                  ` : ''}
-                </table>
-              </div>
-
-              <p style="font-size: 14px; color: #94a3b8;">
-                Ingresa al sistema para ver más detalles sobre este ticket.
-              </p>
-              <hr style="border: none; border-top: 1px solid #334155; margin: 24px 0;">
-              <p style="font-size: 12px; color: #64748b; text-align: center;">
-                Este correo fue enviado automáticamente por el Sistema de Soporte Técnico de RedexCom.
-              </p>
-            </div>
-          </div>
-        `,
+        subject: `Ticket #${createdTicket.id} Asignado — Corporación RedexCom`,
+        html: email(`
+          <h2 style="margin:0 0 6px;font-size:20px;font-weight:700;color:#0f172a">Nuevo Ticket Asignado</h2>
+          <p style="margin:0 0 24px;color:#475569">Hola ${tecnico.nombre}, se te ha asignado un nuevo ticket de soporte técnico.</p>
+          ${ficha([
+            ['Ticket', '<span style="color:#E31E24;font-weight:700;font-size:16px">#' + createdTicket.id + '</span>'],
+            ['Estado', badge('Pendiente', '#fef2f2', '#E31E24')],
+            ['Cliente', createdTicket.cliente_nombre],
+            ['Dirección', createdTicket.cliente_direccion],
+            ['Contacto', createdTicket.cliente_telefono],
+            ...(createdTicket.fecha_visita ? [['Fecha de Visita', '<span style="color:#d97706;font-weight:600">' + createdTicket.fecha_visita + '</span>']] : []),
+            ['Descripción', createdTicket.falla_descripcion],
+          ])}
+          ${btn('Ver Ticket en el Sistema', 'http://localhost:4321/dashboard')}
+        `),
       });
       console.log(`📧 Correo enviado al técnico ${tecnico.email} por ticket #${createdTicket.id}`);
     } catch (emailError) {
@@ -183,47 +181,19 @@ ticketRouter.patch('/:id/status', requireAdmin, async (req, res, next) => {
         if (creador) {
           await nodemailerService.sendMail({
             to: creador.email,
-            subject: `Ticket #${existingTicket.id} Finalizado - Corporación RedexCom`,
-            html: `
-              <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0f172a; border-radius: 16px; overflow: hidden;">
-                <div style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); padding: 32px; text-align: center;">
-                  <h1 style="color: #ffffff; margin: 0; font-size: 28px;">Corporación RedexCom</h1>
-                  <p style="color: #d1fae5; margin: 8px 0 0 0; font-size: 14px;">Sistema de Soporte Técnico</p>
-                </div>
-                <div style="padding: 32px; color: #e2e8f0;">
-                  <h2 style="color: #10b981; margin-top: 0;">✅ Ticket Finalizado</h2>
-                  <p style="font-size: 16px; line-height: 1.6;">
-                    Hola ${creador.nombre}, el siguiente ticket ha sido marcado como <strong style="color: #10b981;">RESUELTO</strong>:
-                  </p>
-                  
-                  <div style="background: #1e293b; border: 2px solid #10b981; border-radius: 12px; padding: 24px; margin: 24px 0;">
-                    <table style="width: 100%; border-collapse: collapse;">
-                      <tr>
-                        <td style="padding: 8px 0; color: #94a3b8; font-size: 14px;">Ticket #</td>
-                        <td style="padding: 8px 0; color: #10b981; font-weight: 600; font-size: 18px;">${existingTicket.id}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 8px 0; color: #94a3b8; font-size: 14px;">Cliente</td>
-                        <td style="padding: 8px 0; color: #ffffff;">${existingTicket.cliente_nombre}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 8px 0; color: #94a3b8; font-size: 14px;">Técnico</td>
-                        <td style="padding: 8px 0; color: #ffffff;">${existingTicket.tecnico_nombre} ${existingTicket.tecnico_apellido}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 8px 0; color: #94a3b8; font-size: 14px;">Descripción</td>
-                        <td style="padding: 8px 0; color: #ffffff;">${existingTicket.falla_descripcion}</td>
-                      </tr>
-                    </table>
-                  </div>
-
-                  <hr style="border: none; border-top: 1px solid #334155; margin: 24px 0;">
-                  <p style="font-size: 12px; color: #64748b; text-align: center;">
-                    Este correo fue enviado automáticamente por el Sistema de Soporte Técnico de RedexCom.
-                  </p>
-                </div>
-              </div>
-            `,
+            subject: `Ticket #${existingTicket.id} Finalizado — Corporación RedexCom`,
+            html: email(`
+              <h2 style="margin:0 0 6px;font-size:20px;font-weight:700;color:#0f172a">✅ Ticket Finalizado</h2>
+              <p style="margin:0 0 24px;color:#475569">Hola ${creador.nombre}, el siguiente ticket ha sido completado con éxito.</p>
+              ${ficha([
+                ['Ticket', '<span style="color:#059669;font-weight:700;font-size:16px">#' + existingTicket.id + '</span>'],
+                ['Estado', badge('Resuelto', '#ecfdf5', '#059669')],
+                ['Cliente', existingTicket.cliente_nombre],
+                ['Técnico', existingTicket.tecnico_nombre + ' ' + existingTicket.tecnico_apellido],
+                ['Descripción', existingTicket.falla_descripcion],
+              ])}
+              ${btn('Ver Detalles', 'http://localhost:4321/dashboard', '#059669')}
+            `, '#059669'),
           });
           console.log(`📧 Correo de ticket resuelto enviado al admin ${creador.email}`);
         }

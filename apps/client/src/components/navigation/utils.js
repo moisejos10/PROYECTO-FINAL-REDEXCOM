@@ -24,6 +24,7 @@ export const getLinks = (pathname) => {
     // Rutas del Dashboard (cuando el usuario está autenticado)
     if (pathname.startsWith('/dashboard')) {
       links = links.concat({name: 'Dashboard', to: '/dashboard'});
+      links = links.concat({name: 'Historial', to: '/dashboard/historial'});
       links = links.concat({name: 'Cerrar Sesión', to: '#', id: 'btn-signout'});
     }
 

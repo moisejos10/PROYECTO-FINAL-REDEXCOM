@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import userRepository from './user.repository.js';
 import verificationRepository from '../auth/verification.repository.js';
 import nodemailerService from '../../services/nodemailer.js';
+import { email, codeBox, btn } from '../../services/emailTemplate.js';
 import { authenticate, requireAdmin } from '../auth/auth.middlewares.js';
 const userRouter = Router();
 
@@ -37,39 +38,17 @@ userRouter.post('/', async (req, res, next) => {
     // 5. Enviar correo con el código de verificación
     await nodemailerService.sendMail({
       to: createdUser.email,
-      subject: 'Verificación de cuenta - Corporación RedexCom',
-      html: `
-        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0f172a; border-radius: 16px; overflow: hidden;">
-          <div style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); padding: 32px; text-align: center;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 28px;">Corporación RedexCom</h1>
-            <p style="color: #bfdbfe; margin: 8px 0 0 0; font-size: 14px;">Sistema de Soporte Técnico</p>
-          </div>
-          <div style="padding: 32px; color: #e2e8f0;">
-            <h2 style="color: #ffffff; margin-top: 0;">¡Bienvenido/a, ${createdUser.nombre}!</h2>
-            <p style="font-size: 16px; line-height: 1.6;">
-              Tu cuenta ha sido creada exitosamente. Para activarla, usa el siguiente código de verificación:
-            </p>
-            <div style="background: #1e293b; border: 2px solid #3b82f6; border-radius: 12px; padding: 24px; text-align: center; margin: 24px 0;">
-              <p style="color: #94a3b8; margin: 0 0 8px 0; font-size: 14px;">Tu código de verificación</p>
-              <h1 style="color: #60a5fa; margin: 0; font-size: 40px; letter-spacing: 8px; font-family: 'Courier New', monospace;">${code}</h1>
-              <p style="color: #64748b; margin: 8px 0 0 0; font-size: 12px;">Expira en 1 hora</p>
-            </div>
-            <p style="font-size: 14px; color: #94a3b8;">
-              También puedes verificar tu cuenta haciendo clic en el siguiente enlace:
-            </p>
-            <div style="text-align: center; margin: 24px 0;">
-              <a href="http://localhost:4321/verificar?email=${encodeURIComponent(createdUser.email)}" 
-                 style="display: inline-block; background: linear-gradient(135deg, #2563eb, #3b82f6); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
-                Verificar mi cuenta
-              </a>
-            </div>
-            <hr style="border: none; border-top: 1px solid #334155; margin: 24px 0;">
-            <p style="font-size: 12px; color: #64748b; text-align: center;">
-              Si no solicitaste esta cuenta, puedes ignorar este correo.
-            </p>
-          </div>
-        </div>
-      `,
+      subject: 'Verificación de cuenta — Corporación RedexCom',
+      html: email(`
+        <h2 style="margin:0 0 6px;font-size:20px;font-weight:700;color:#0f172a">¡Bienvenido/a, ${createdUser.nombre}!</h2>
+        <p style="margin:0 0 4px;color:#64748b;font-size:13px">Tu cuenta ha sido creada con éxito en el Sistema de Soporte Técnico.</p>
+        <p style="margin:0 0 20px;color:#475569">Para activarla, ingresa el siguiente código en la pantalla de verificación:</p>
+        ${codeBox(code)}
+        <p style="margin:0 0 4px;color:#475569;font-size:14px">También puedes verificar directamente con el botón:</p>
+        ${btn('Verificar mi cuenta', 'http://localhost:4321/verificar?email=' + encodeURIComponent(createdUser.email))}
+        <hr style="border:none;border-top:1px solid #f1f5f9;margin:28px 0 14px"/>
+        <p style="margin:0;font-size:12px;color:#94a3b8;text-align:center">Si no solicitaste esta cuenta, ignora este correo.</p>
+      `),
     });
 
     res.status(201).json({

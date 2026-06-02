@@ -94,12 +94,12 @@ import PageLayout from "../layout/PageLayout.astro";
     </div>
 
     <!-- Wave divider (inspired by RedexCom's website) -->
-    <div class="absolute bottom-0 left-0 right-0">
+    <div class="absolute -bottom-[1px] left-0 right-0">
       <svg
         viewBox="0 0 1440 100"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        class="w-full h-auto"
+        class="w-full h-auto block translate-y-[1px]"
       >
         <path
           d="M0 40C240 80 480 100 720 80C960 60 1200 20 1440 40V100H0V40Z"
@@ -132,22 +132,8 @@ import PageLayout from "../layout/PageLayout.astro";
       >
         <!-- Card 1: Tickets -->
         <div class="theme-card p-6 sm:p-8 group" id="feature-tickets">
-          <div
-            class="w-12 h-12 rounded-xl bg-brand-500/10 flex items-center justify-center mb-5 group-hover:bg-brand-500/20 transition-colors"
-          >
-            <svg
-              class="w-6 h-6 text-brand-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-              ></path>
-            </svg>
+          <div class="mb-5 rounded-xl overflow-hidden shadow-sm group-hover:shadow-md transition-shadow">
+            <img src="/SOPORTE-TECNICO-RC.webp" alt="Gestión de Tickets" class="w-full h-40 object-cover hover:scale-105 transition-transform duration-500" />
           </div>
           <h3
             class="text-lg font-bold font-heading mb-2"
@@ -166,22 +152,8 @@ import PageLayout from "../layout/PageLayout.astro";
 
         <!-- Card 2: Monitoreo -->
         <div class="theme-card p-6 sm:p-8 group" id="feature-monitoring">
-          <div
-            class="w-12 h-12 rounded-xl bg-navy-300/10 flex items-center justify-center mb-5 group-hover:bg-navy-300/20 transition-colors"
-          >
-            <svg
-              class="w-6 h-6 text-navy-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-              ></path>
-            </svg>
+          <div class="mb-5 rounded-xl overflow-hidden shadow-sm group-hover:shadow-md transition-shadow">
+            <img src="/monitoreo-tiempo-real-rc.avif" alt="Monitoreo en Tiempo Real" class="w-full h-40 object-cover hover:scale-105 transition-transform duration-500" />
           </div>
           <h3
             class="text-lg font-bold font-heading mb-2"
@@ -203,22 +175,8 @@ import PageLayout from "../layout/PageLayout.astro";
           class="theme-card p-6 sm:p-8 group sm:col-span-2 lg:col-span-1"
           id="feature-support"
         >
-          <div
-            class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-5 group-hover:bg-emerald-500/20 transition-colors"
-          >
-            <svg
-              class="w-6 h-6 text-emerald-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"
-              ></path>
-            </svg>
+          <div class="mb-5 rounded-xl overflow-hidden shadow-sm group-hover:shadow-md transition-shadow">
+            <img src="/gestion-roles-rc.webp" alt="Equipo de Soporte" class="w-full h-40 object-cover hover:scale-105 transition-transform duration-500" />
           </div>
           <h3
             class="text-lg font-bold font-heading mb-2"

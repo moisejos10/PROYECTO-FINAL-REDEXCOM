@@ -157,7 +157,7 @@ import PageLayout from "../../../layout/PageLayout.astro";
             <textarea
               id="falla_descripcion"
               name="falla_descripcion"
-              rows="4"
+              rows="8"
               maxlength="100"
               class="theme-input resize-none"
               placeholder="Describe detalladamente el problema reportado por el cliente..."
@@ -249,6 +249,11 @@ import PageLayout from "../../../layout/PageLayout.astro";
     const API_BASE = "/api";
     let accessToken = localStorage.getItem("accessToken");
 
+    // ── Guardia de autenticación inmediata ──
+    if (!accessToken) {
+      window.location.replace('/');
+    }
+
     async function refreshAccessToken() {
       try {
         const res = await fetch(`${API_BASE}/auth/refresh`, {
@@ -289,7 +294,8 @@ import PageLayout from "../../../layout/PageLayout.astro";
           });
         } else {
           localStorage.removeItem("accessToken");
-          window.location.href = "/login";
+          localStorage.removeItem("user");
+          window.location.replace('/');
           return null;
         }
       }
@@ -311,7 +317,7 @@ import PageLayout from "../../../layout/PageLayout.astro";
       if (!accessToken) {
         const refreshed = await refreshAccessToken();
         if (!refreshed) {
-          window.location.href = "/login";
+          window.location.replace('/');
           return;
         }
       }
@@ -319,7 +325,7 @@ import PageLayout from "../../../layout/PageLayout.astro";
       // 2. Verificar que sea admin
       const userRes = await fetchWithAuth(`${API_BASE}/auth/user`);
       if (!userRes || !userRes.ok) {
-        window.location.href = "/login";
+        window.location.replace('/');
         return;
       }
       const user = await userRes.json();
@@ -509,7 +515,8 @@ import PageLayout from "../../../layout/PageLayout.astro";
             await fetchWithAuth(`${API_BASE}/auth/signout`);
           } catch {}
           localStorage.removeItem("accessToken");
-          window.location.href = "/login";
+          localStorage.removeItem("user");
+          window.location.replace('/');
         });
     }
 

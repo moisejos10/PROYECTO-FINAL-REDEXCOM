@@ -6,6 +6,7 @@ import userRepository from '../user/user.repository.js';
 import authRepository from './auth.repository.js';
 import verificationRepository from './verification.repository.js';
 import nodemailerService from '../../services/nodemailer.js';
+import { email, codeBox, btn } from '../../services/emailTemplate.js';
 import { authenticate } from './auth.middlewares.js';
 const authRouter = Router();
 
@@ -147,30 +148,16 @@ authRouter.post('/resend-code', async (req, res, next) => {
     // Enviar correo
     await nodemailerService.sendMail({
       to: user.email,
-      subject: 'Nuevo código de verificación - Corporación RedexCom',
-      html: `
-        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0f172a; border-radius: 16px; overflow: hidden;">
-          <div style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); padding: 32px; text-align: center;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 28px;">Corporación RedexCom</h1>
-            <p style="color: #bfdbfe; margin: 8px 0 0 0; font-size: 14px;">Sistema de Soporte Técnico</p>
-          </div>
-          <div style="padding: 32px; color: #e2e8f0;">
-            <h2 style="color: #ffffff; margin-top: 0;">Nuevo código de verificación</h2>
-            <p style="font-size: 16px; line-height: 1.6;">Hola ${user.nombre}, aquí tienes tu nuevo código:</p>
-            <div style="background: #1e293b; border: 2px solid #3b82f6; border-radius: 12px; padding: 24px; text-align: center; margin: 24px 0;">
-              <p style="color: #94a3b8; margin: 0 0 8px 0; font-size: 14px;">Tu código de verificación</p>
-              <h1 style="color: #60a5fa; margin: 0; font-size: 40px; letter-spacing: 8px; font-family: 'Courier New', monospace;">${code}</h1>
-              <p style="color: #64748b; margin: 8px 0 0 0; font-size: 12px;">Expira en 1 hora</p>
-            </div>
-            <div style="text-align: center; margin: 24px 0;">
-              <a href="http://localhost:4321/verificar?email=${encodeURIComponent(user.email)}" 
-                 style="display: inline-block; background: linear-gradient(135deg, #2563eb, #3b82f6); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
-                Verificar mi cuenta
-              </a>
-            </div>
-          </div>
-        </div>
-      `,
+      subject: 'Nuevo código de verificación — Corporación RedexCom',
+      html: email(`
+        <h2 style="margin:0 0 6px;font-size:20px;font-weight:700;color:#0f172a">Nuevo Código de Verificación</h2>
+        <p style="margin:0 0 20px;color:#475569">Hola ${user.nombre}, has solicitado un nuevo código para activar tu cuenta:</p>
+        ${codeBox(code)}
+        <p style="margin:0 0 4px;color:#475569;font-size:14px">O verifica directamente:</p>
+        ${btn('Verificar mi cuenta', 'http://localhost:4321/verificar?email=' + encodeURIComponent(user.email))}
+        <hr style="border:none;border-top:1px solid #f1f5f9;margin:28px 0 14px"/>
+        <p style="margin:0;font-size:12px;color:#94a3b8;text-align:center">Si no solicitaste este código, ignora este correo.</p>
+      `),
     });
 
     return res.status(200).json({ message: 'Nuevo código enviado.' });
@@ -194,15 +181,19 @@ authRouter.get('/refresh', async (req, res) => {
     const session = authRepository.findSessionByJwtId({ jwtid: decodedToken.jti });
     if (!session) return res.sendStatus(401);
 
+    // 3.5 Buscar datos frescos del usuario
+    const user = userRepository.findUserById(decodedToken.id);
+    if (!user) return res.sendStatus(401);
+
     // 4. Crear un nuevo token de acceso y refresh token
     const accessToken = jwt.sign(
-      { id: decodedToken.id, email: decodedToken.email, rol: decodedToken.rol, nombre: decodedToken.nombre },
+      { id: user.id, email: user.email, rol: user.rol, nombre: user.nombre },
       process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: '30m' }
     );
     const refreshTokenId = crypto.randomUUID();
     const newRefreshToken = jwt.sign(
-      { id: decodedToken.id, email: decodedToken.email, rol: decodedToken.rol, nombre: decodedToken.nombre },
+      { id: user.id, email: user.email },
       process.env.REFRESH_TOKEN_SECRET,
       { expiresIn: '7d', jwtid: refreshTokenId }
     );
