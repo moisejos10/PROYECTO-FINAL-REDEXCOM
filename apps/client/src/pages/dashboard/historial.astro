@@ -521,6 +521,8 @@ import PageLayout from "../../layout/PageLayout.astro";
         });
     }
 
-    initHistorial();
+    if (accessToken) {
+      initHistorial();
+    }
   </script>
 </PageLayout>

@@ -255,6 +255,57 @@ const links = getLinks(currentPath);
     }
   });
 
+  // ── Sincronización de sesión entre pestañas/ventanas ──
+  window.addEventListener('storage', (event) => {
+    if (event.key === 'accessToken' && !event.newValue) {
+      // Si el token fue eliminado en otra pestaña (por cierre de sesión o inactividad)
+      const isDashboard = window.location.pathname.startsWith('/dashboard');
+      if (isDashboard) {
+        window.location.replace('/');
+      }
+    }
+  });
+
+  // ── Verificación periódica de la sesión activa ──
+  (function initSessionPoll() {
+    const POLL_INTERVAL_MS = 30 * 1000; // 30 segundos
+    let pollInterval = null;
+
+    async function checkSession() {
+      const isDashboard = window.location.pathname.startsWith('/dashboard');
+      const token = localStorage.getItem('accessToken');
+      if (isDashboard && token) {
+        try {
+          const res = await fetch('/api/auth/user', {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            credentials: 'include'
+          });
+
+          // Si la API retorna 401 o 403, intentamos refrescar el token de acceso
+          if (res.status === 401 || res.status === 403) {
+            const refreshRes = await fetch('/api/auth/refresh', { credentials: 'include' });
+            if (refreshRes.ok) {
+              const data = await refreshRes.json();
+              localStorage.setItem('accessToken', data.accessToken);
+            } else {
+              // Si el refresh falla, la sesión realmente se ha inactivado/cerrado
+              handleSignOut();
+            }
+          }
+        } catch {
+          // Ignorar errores de red temporales para evitar falsos cierres de sesión
+        }
+      }
+    }
+
+    if (window.location.pathname.startsWith('/dashboard')) {
+      pollInterval = setInterval(checkSession, POLL_INTERVAL_MS);
+    }
+  })();
+
   // ── Cierre de sesión automático por inactividad ──
   (function initInactivityTimer() {
     const INACTIVITY_LIMIT_MS = 15 * 60 * 1000; // 15 minutos

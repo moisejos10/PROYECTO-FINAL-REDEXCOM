@@ -356,6 +356,78 @@ import PageLayout from "../../../layout/PageLayout.astro";
       </div>
     </div>
 
+    <!-- Informe de Cierre (visible solo si el ticket está resuelto) -->
+    <div id="cierre-section" class="hidden mb-6">
+      <div class="theme-card p-6">
+        <h3 class="text-base font-heading font-semibold theme-text flex items-center gap-2 mb-4">
+          <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Informe de Cierre
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <p class="text-xs font-medium theme-text-muted uppercase tracking-wider mb-1">¿Se cambió el equipo?</p>
+            <p id="cierre-cambio-equipo" class="text-sm font-semibold theme-text"></p>
+          </div>
+          <div>
+            <p class="text-xs font-medium theme-text-muted uppercase tracking-wider mb-1">¿Test de velocidad?</p>
+            <p id="cierre-test-velocidad" class="text-sm font-semibold theme-text"></p>
+          </div>
+          <div>
+            <p class="text-xs font-medium theme-text-muted uppercase tracking-wider mb-1">Potencia Óptica</p>
+            <p id="cierre-potencia" class="text-sm font-medium theme-text"></p>
+          </div>
+          <div>
+            <p class="text-xs font-medium theme-text-muted uppercase tracking-wider mb-1">Cerrado Por</p>
+            <p id="cierre-cerrado-por" class="text-sm font-medium theme-text"></p>
+          </div>
+          <div class="sm:col-span-2">
+            <p class="text-xs font-medium theme-text-muted uppercase tracking-wider mb-1">Observaciones</p>
+            <p id="cierre-observaciones" class="text-sm theme-text-secondary leading-relaxed whitespace-pre-wrap"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comentarios Internos -->
+    <div class="mb-6">
+      <div class="theme-card p-6">
+        <h3 class="text-base font-heading font-semibold theme-text flex items-center gap-2 mb-4">
+          <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+          </svg>
+          Comentarios Internos
+          <span id="comentarios-count" class="ml-auto text-xs font-medium theme-text-muted"></span>
+        </h3>
+
+        <!-- Lista de comentarios -->
+        <div id="comentarios-list" class="space-y-4 mb-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+          <p id="comentarios-empty" class="text-sm theme-text-muted text-center py-6">No hay comentarios aún. Sé el primero en dejar una nota.</p>
+        </div>
+
+        <!-- Formulario para agregar comentario -->
+        <div class="pt-4 border-t" style="border-color: var(--border-primary);">
+          <textarea
+            id="nuevo-comentario"
+            rows="3"
+            maxlength="500"
+            class="theme-input resize-none w-full mb-3"
+            placeholder="Escribe una nota interna sobre este ticket..."
+          ></textarea>
+          <div class="flex items-center justify-between">
+            <span id="comentario-chars" class="text-xs theme-text-muted">0/500</span>
+            <button id="btn-add-comment" class="btn-brand text-sm !py-2 !px-4">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+              </svg>
+              Agregar Nota
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Feedback messages -->
     <div
       id="action-success"
@@ -417,6 +489,83 @@ import PageLayout from "../../../layout/PageLayout.astro";
             class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-red-500 hover:bg-red-600 transition-all cursor-pointer"
           >
             Si, Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Checklist de Cierre Modal -->
+  <div
+    id="checklist-modal"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center"
+  >
+    <div
+      id="checklist-modal-backdrop"
+      class="fixed inset-0 bg-black/60 backdrop-blur-sm"
+    ></div>
+    <div class="relative theme-card p-6 sm:p-8 max-w-lg w-full mx-4 z-10">
+      <div>
+        <div class="flex items-center gap-3 mb-6">
+          <div
+            class="w-12 h-12 rounded-full bg-emerald-500/15 flex items-center justify-center"
+          >
+            <svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-lg font-heading font-bold theme-text">Checklist de Cierre</h3>
+            <p class="text-xs theme-text-muted">Complete este formulario para resolver el ticket</p>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="checklist-cambio-equipo" class="theme-label block mb-1.5">¿Se cambió el equipo?</label>
+              <select id="checklist-cambio-equipo" class="theme-input cursor-pointer">
+                <option value="false">No</option>
+                <option value="true">Sí</option>
+              </select>
+            </div>
+            <div>
+              <label for="checklist-test-velocidad" class="theme-label block mb-1.5">¿Test de velocidad?</label>
+              <select id="checklist-test-velocidad" class="theme-input cursor-pointer">
+                <option value="false">No</option>
+                <option value="true">Sí</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label for="checklist-potencia" class="theme-label block mb-1.5">Potencia óptica (dBm) <span class="text-xs theme-text-muted">(opcional)</span></label>
+            <input type="text" id="checklist-potencia" class="theme-input" placeholder="Ej: -18.5 dBm" />
+          </div>
+          <div>
+            <label for="checklist-observaciones" class="theme-label block mb-1.5">Observaciones del cierre <span class="text-brand-500">*</span></label>
+            <textarea
+              id="checklist-observaciones"
+              rows="3"
+              maxlength="500"
+              class="theme-input resize-none"
+              placeholder="Describa el trabajo realizado, repuestos usados, etc. (mín. 10 caracteres)"
+            ></textarea>
+          </div>
+        </div>
+
+        <div id="checklist-error" class="hidden mt-3 rounded-lg p-3 text-xs"
+          style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444;">
+        </div>
+
+        <div class="flex gap-3 mt-6">
+          <button
+            id="btn-cancel-checklist"
+            class="btn-secondary flex-1 text-sm !py-2.5">Cancelar</button>
+          <button
+            id="btn-confirm-checklist"
+            class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-emerald-500 hover:bg-emerald-600 transition-all cursor-pointer"
+          >
+            ✅ Confirmar Cierre
           </button>
         </div>
       </div>
@@ -607,8 +756,27 @@ import PageLayout from "../../../layout/PageLayout.astro";
     }
 
     // -- Acciones --
+
+    // ── Checklist Modal ──
+    function openChecklistModal() {
+      document.getElementById("checklist-modal").classList.remove("hidden");
+      document.getElementById("checklist-error").classList.add("hidden");
+    }
+
+    function closeChecklistModal() {
+      document.getElementById("checklist-modal").classList.add("hidden");
+    }
+
     async function updateStatus() {
       const newStatus = document.getElementById("change-status").value;
+
+      // Si se quiere resolver, abrir el modal del checklist primero
+      if (newStatus === "resuelto") {
+        openChecklistModal();
+        return;
+      }
+
+      // Para otros estatus, proceder normalmente
       const btn = document.getElementById("btn-update-status");
       const btnText = document.getElementById("btn-update-text");
 
@@ -654,6 +822,166 @@ import PageLayout from "../../../layout/PageLayout.astro";
 
       btn.disabled = false;
       btnText.textContent = "Actualizar Estatus";
+    }
+
+    async function confirmChecklist() {
+      const cambioEquipo = document.getElementById("checklist-cambio-equipo").value === "true";
+      const testVelocidad = document.getElementById("checklist-test-velocidad").value === "true";
+      const potenciaOptica = document.getElementById("checklist-potencia").value.trim();
+      const observaciones = document.getElementById("checklist-observaciones").value.trim();
+
+      // Validar observaciones
+      if (observaciones.length < 10) {
+        const errEl = document.getElementById("checklist-error");
+        errEl.textContent = "Las observaciones deben tener al menos 10 caracteres.";
+        errEl.classList.remove("hidden");
+        return;
+      }
+
+      const btn = document.getElementById("btn-confirm-checklist");
+      btn.disabled = true;
+      btn.textContent = "Procesando...";
+
+      try {
+        const res = await fetchWithAuth(
+          `${API_BASE}/tickets/${ticketId}/status`,
+          {
+            method: "PATCH",
+            body: JSON.stringify({
+              estatus: "resuelto",
+              cambio_equipo: cambioEquipo,
+              test_velocidad: testVelocidad,
+              potencia_optica: potenciaOptica || undefined,
+              observaciones: observaciones,
+            }),
+          },
+        );
+
+        if (!res) return;
+
+        if (res.ok) {
+          const updatedTicket = await res.json();
+          currentTicket = {
+            ...currentTicket,
+            estatus: updatedTicket.estatus,
+            updated_at: updatedTicket.updated_at,
+          };
+          closeChecklistModal();
+          renderTicket(currentTicket);
+          await loadCierreData();
+          showMessage("success", "Ticket resuelto exitosamente con checklist de cierre.");
+        } else {
+          const data = await res.json();
+          const errEl = document.getElementById("checklist-error");
+          errEl.textContent = data.error || "Error al resolver el ticket";
+          errEl.classList.remove("hidden");
+        }
+      } catch {
+        const errEl = document.getElementById("checklist-error");
+        errEl.textContent = "Error de conexión. Intente de nuevo.";
+        errEl.classList.remove("hidden");
+      }
+
+      btn.disabled = false;
+      btn.textContent = "✅ Confirmar Cierre";
+    }
+
+    // ── Cierre Data ──
+    async function loadCierreData() {
+      if (currentTicket.estatus !== "resuelto") return;
+
+      try {
+        const res = await fetchWithAuth(`${API_BASE}/tickets/${ticketId}/cierre`);
+        if (res && res.ok) {
+          const cierre = await res.json();
+          document.getElementById("cierre-cambio-equipo").textContent = cierre.cambio_equipo ? "✅ Sí" : "❌ No";
+          document.getElementById("cierre-test-velocidad").textContent = cierre.test_velocidad ? "✅ Sí" : "❌ No";
+          document.getElementById("cierre-potencia").textContent = cierre.potencia_optica || "N/A";
+          document.getElementById("cierre-cerrado-por").textContent = `${cierre.cerrado_por_nombre} ${cierre.cerrado_por_apellido}`;
+          document.getElementById("cierre-observaciones").textContent = cierre.observaciones;
+          document.getElementById("cierre-section").classList.remove("hidden");
+        }
+      } catch { /* silently ignore */ }
+    }
+
+    // ── Comentarios ──
+    function renderComentario(c) {
+      const initial = (c.autor_nombre || "?")[0].toUpperCase();
+      const rolBadge = (c.autor_rol === "admin" || c.autor_rol === "super_admin")
+        ? '<span class="text-xs px-1.5 py-0.5 rounded-full" style="background: rgba(227,30,36,0.15); color: #E31E24;">Admin</span>'
+        : '<span class="text-xs px-1.5 py-0.5 rounded-full" style="background: rgba(59,130,246,0.15); color: #3b82f6;">Técnico</span>';
+
+      return `
+        <div class="flex gap-3 p-3 rounded-xl" style="background: var(--card-bg); border: 1px solid var(--border-primary);">
+          <div class="w-9 h-9 rounded-full bg-brand-500/15 flex items-center justify-center flex-shrink-0">
+            <span class="text-brand-500 font-heading font-bold text-sm">${initial}</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1 flex-wrap">
+              <span class="text-sm font-semibold theme-text">${c.autor_nombre} ${c.autor_apellido}</span>
+              ${rolBadge}
+              <span class="text-xs theme-text-muted ml-auto">${formatDateTime(c.created_at)}</span>
+            </div>
+            <p class="text-sm theme-text-secondary leading-relaxed whitespace-pre-wrap">${c.contenido}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    async function loadComentarios() {
+      try {
+        const res = await fetchWithAuth(`${API_BASE}/tickets/${ticketId}/comentarios`);
+        if (res && res.ok) {
+          const comentarios = await res.json();
+          const listEl = document.getElementById("comentarios-list");
+          const emptyEl = document.getElementById("comentarios-empty");
+          const countEl = document.getElementById("comentarios-count");
+
+          countEl.textContent = `${comentarios.length} nota${comentarios.length !== 1 ? "s" : ""}`;
+
+          if (comentarios.length === 0) {
+            emptyEl.classList.remove("hidden");
+          } else {
+            emptyEl.classList.add("hidden");
+            listEl.innerHTML = comentarios.map(renderComentario).join("");
+          }
+        }
+      } catch { /* silently ignore */ }
+    }
+
+    async function addComentario() {
+      const textarea = document.getElementById("nuevo-comentario");
+      const contenido = textarea.value.trim();
+      if (!contenido) return;
+
+      const btn = document.getElementById("btn-add-comment");
+      btn.disabled = true;
+
+      try {
+        const res = await fetchWithAuth(
+          `${API_BASE}/tickets/${ticketId}/comentarios`,
+          {
+            method: "POST",
+            body: JSON.stringify({ contenido }),
+          },
+        );
+
+        if (res && res.ok) {
+          textarea.value = "";
+          document.getElementById("comentario-chars").textContent = "0/500";
+          await loadComentarios();
+          // Scroll to bottom of comments
+          const listEl = document.getElementById("comentarios-list");
+          listEl.scrollTop = listEl.scrollHeight;
+        } else if (res) {
+          const data = await res.json();
+          showMessage("error", data.error || "Error al agregar comentario");
+        }
+      } catch {
+        showMessage("error", "Error de conexión.");
+      }
+
+      btn.disabled = false;
     }
 
     async function deleteTicket() {
@@ -723,11 +1051,17 @@ import PageLayout from "../../../layout/PageLayout.astro";
       // 4. Renderizar ticket
       renderTicket(currentTicket);
 
-      // 5. Mostrar contenido
+      // 5. Cargar datos del cierre (si aplica)
+      await loadCierreData();
+
+      // 6. Cargar comentarios
+      await loadComentarios();
+
+      // 7. Mostrar contenido
       loadingEl.classList.add("hidden");
       contentEl.classList.remove("hidden");
 
-      // 6. Event listeners
+      // 8. Event listeners — Acciones admin
       document
         .getElementById("btn-update-status")
         ?.addEventListener("click", updateStatus);
@@ -744,6 +1078,29 @@ import PageLayout from "../../../layout/PageLayout.astro";
         .getElementById("btn-confirm-delete")
         ?.addEventListener("click", deleteTicket);
 
+      // 9. Event listeners — Checklist modal
+      document
+        .getElementById("btn-cancel-checklist")
+        ?.addEventListener("click", closeChecklistModal);
+      document
+        .getElementById("checklist-modal-backdrop")
+        ?.addEventListener("click", closeChecklistModal);
+      document
+        .getElementById("btn-confirm-checklist")
+        ?.addEventListener("click", confirmChecklist);
+
+      // 10. Event listeners — Comentarios
+      document
+        .getElementById("btn-add-comment")
+        ?.addEventListener("click", addComentario);
+
+      // Contador de caracteres del textarea de comentarios
+      const commentTextarea = document.getElementById("nuevo-comentario");
+      const commentChars = document.getElementById("comentario-chars");
+      commentTextarea?.addEventListener("input", () => {
+        commentChars.textContent = `${commentTextarea.value.length}/500`;
+      });
+
       // Cerrar sesion
       document
         .getElementById("btn-signout")
@@ -758,6 +1115,9 @@ import PageLayout from "../../../layout/PageLayout.astro";
         });
     }
 
-    initPage();
+    if (accessToken) {
+      initPage();
+    }
   </script>
 </PageLayout>
+

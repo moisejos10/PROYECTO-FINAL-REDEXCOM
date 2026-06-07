@@ -215,6 +215,138 @@ const getWeeklyTicketStatsByTecnico = (tecnicoId) => {
   };
 };
 
+// ═══════════════════════════════════════════════════════════
+// ── CIERRES DE TICKET (Checklist de resolución) ──
+// ═══════════════════════════════════════════════════════════
+
+/**
+ * Crea un registro de cierre de ticket (checklist)
+ * @param {Object} payload
+ * @returns {Object}
+ */
+const createTicketCierre = ({ ticketId, cambioEquipo, testVelocidad, potenciaOptica, observaciones, cerradoPor }) => {
+  const smtm = db.prepare(`
+    INSERT INTO ticket_cierres (ticket_id, cambio_equipo, test_velocidad, potencia_optica, observaciones, cerrado_por)
+    VALUES (?, ?, ?, ?, ?, ?) RETURNING *
+  `);
+  return smtm.get(ticketId, cambioEquipo ? 1 : 0, testVelocidad ? 1 : 0, potenciaOptica || null, observaciones, cerradoPor);
+};
+
+/**
+ * Obtiene el registro de cierre de un ticket
+ * @param {number} ticketId
+ * @returns {Object|undefined}
+ */
+const findCierreByTicketId = (ticketId) => {
+  const smtm = db.prepare(`
+    SELECT ticket_cierres.*, users.nombre AS cerrado_por_nombre, users.apellido AS cerrado_por_apellido
+    FROM ticket_cierres
+    INNER JOIN users ON ticket_cierres.cerrado_por = users.id
+    WHERE ticket_cierres.ticket_id = ?
+  `);
+  return smtm.get(ticketId);
+};
+
+// ═══════════════════════════════════════════════════════════
+// ── COMENTARIOS INTERNOS ──
+// ═══════════════════════════════════════════════════════════
+
+/**
+ * Crea un comentario interno en un ticket
+ * @param {Object} payload
+ * @returns {Object}
+ */
+const createComentario = ({ ticketId, usuarioId, contenido }) => {
+  const smtm = db.prepare(`
+    INSERT INTO ticket_comentarios (ticket_id, usuario_id, contenido)
+    VALUES (?, ?, ?) RETURNING *
+  `);
+  return smtm.get(ticketId, usuarioId, contenido);
+};
+
+/**
+ * Obtiene todos los comentarios de un ticket (con datos del autor)
+ * @param {number} ticketId
+ * @returns {Array}
+ */
+const findComentariosByTicketId = (ticketId) => {
+  const smtm = db.prepare(`
+    SELECT ticket_comentarios.*, users.nombre AS autor_nombre, users.apellido AS autor_apellido, users.rol AS autor_rol
+    FROM ticket_comentarios
+    INNER JOIN users ON ticket_comentarios.usuario_id = users.id
+    WHERE ticket_comentarios.ticket_id = ?
+    ORDER BY ticket_comentarios.created_at ASC
+  `);
+  return smtm.all(ticketId);
+};
+
+// ═══════════════════════════════════════════════════════════
+// ── ESTADÍSTICAS AVANZADAS (Reportes) ──
+// ═══════════════════════════════════════════════════════════
+
+/**
+ * Ranking de tickets resueltos por técnico
+ * @returns {Array} [{ tecnico_nombre, tecnico_apellido, resueltos }]
+ */
+const getTicketsByTecnicoRanking = () => {
+  const smtm = db.prepare(`
+    SELECT users.nombre AS tecnico_nombre, users.apellido AS tecnico_apellido, COUNT(*) AS resueltos
+    FROM tickets
+    INNER JOIN users ON tickets.tecnico_id = users.id
+    WHERE tickets.estatus = 'resuelto'
+    GROUP BY tickets.tecnico_id
+    ORDER BY resueltos DESC
+  `);
+  return smtm.all();
+};
+
+/**
+ * Tendencia de tickets creados por semana (últimas 8 semanas)
+ * @returns {Array} [{ semana, total }]
+ */
+const getWeeklyTicketTrend = () => {
+  const smtm = db.prepare(`
+    SELECT strftime('%Y-W%W', created_at) AS semana,
+           COUNT(*) AS total
+    FROM tickets
+    WHERE created_at >= date('now', '-56 days')
+    GROUP BY semana
+    ORDER BY semana ASC
+  `);
+  return smtm.all();
+};
+
+/**
+ * Tiempo promedio de resolución en horas
+ * @returns {Object} { promedio_horas }
+ */
+const getAverageResolutionTime = () => {
+  const smtm = db.prepare(`
+    SELECT ROUND(AVG((julianday(updated_at) - julianday(created_at)) * 24), 1) AS promedio_horas
+    FROM tickets
+    WHERE estatus = 'resuelto'
+  `);
+  const result = smtm.get();
+  return { promedio_horas: result.promedio_horas || 0 };
+};
+
+/**
+ * Técnico con más tickets resueltos
+ * @returns {Object|null} { nombre, apellido, resueltos }
+ */
+const getTopTecnico = () => {
+  const smtm = db.prepare(`
+    SELECT users.nombre, users.apellido, COUNT(*) AS resueltos
+    FROM tickets
+    INNER JOIN users ON tickets.tecnico_id = users.id
+    WHERE tickets.estatus = 'resuelto'
+    GROUP BY tickets.tecnico_id
+    ORDER BY resueltos DESC
+    LIMIT 1
+  `);
+  return smtm.get() || null;
+};
+
 const ticketRepository = {
   createTicket,
   findAllTickets,
@@ -228,6 +360,18 @@ const ticketRepository = {
   findWeeklyTicketsByTecnico,
   getWeeklyTicketStats,
   getWeeklyTicketStatsByTecnico,
+  // Cierres
+  createTicketCierre,
+  findCierreByTicketId,
+  // Comentarios
+  createComentario,
+  findComentariosByTicketId,
+  // Estadísticas avanzadas
+  getTicketsByTecnicoRanking,
+  getWeeklyTicketTrend,
+  getAverageResolutionTime,
+  getTopTecnico,
 };
 
 export default ticketRepository;
+

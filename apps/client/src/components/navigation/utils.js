@@ -25,6 +25,7 @@ export const getLinks = (pathname) => {
     if (pathname.startsWith('/dashboard')) {
       links = links.concat({name: 'Dashboard', to: '/dashboard'});
       links = links.concat({name: 'Historial', to: '/dashboard/historial'});
+      links = links.concat({name: 'Reportes', to: '/dashboard/reportes', id: 'nav-reportes'});
       links = links.concat({name: 'Cerrar Sesión', to: '#', id: 'btn-signout'});
     }
 

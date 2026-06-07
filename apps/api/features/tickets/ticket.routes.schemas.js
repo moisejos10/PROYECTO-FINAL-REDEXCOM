@@ -57,9 +57,34 @@ export const updateTicketStatusRouteSchema = {
     estatus: z.enum(['pendiente', 'en_proceso', 'resuelto'], {
       error: 'El estatus debe ser: pendiente, en_proceso o resuelto',
     }),
+    // Campos del checklist de cierre (requeridos solo cuando estatus === 'resuelto')
+    cambio_equipo: z.boolean().optional(),
+    test_velocidad: z.boolean().optional(),
+    potencia_optica: z.string().max(50).optional(),
+    observaciones: z.string().max(500).optional(),
   }),
   params: z.object({
     id: z.string(),
   }),
   query: null,
 };
+
+// Schema para validar los campos del checklist cuando se resuelve un ticket
+export const resolveTicketChecklistSchema = z.object({
+  cambio_equipo: z.boolean({ required_error: 'Debe indicar si se cambió el equipo' }),
+  test_velocidad: z.boolean({ required_error: 'Debe indicar si se realizó test de velocidad' }),
+  potencia_optica: z.string().max(50, { message: 'La potencia óptica no puede superar 50 caracteres' }).optional(),
+  observaciones: z.string()
+    .min(10, { message: 'Las observaciones deben tener al menos 10 caracteres' })
+    .max(500, { message: 'Las observaciones no pueden superar 500 caracteres' }),
+});
+
+// Schema para crear un comentario interno
+export const createComentarioSchema = {
+  body: z.object({
+    contenido: z.string()
+      .min(1, { message: 'El comentario no puede estar vacío' })
+      .max(500, { message: 'El comentario no puede superar 500 caracteres' }),
+  }),
+};
+

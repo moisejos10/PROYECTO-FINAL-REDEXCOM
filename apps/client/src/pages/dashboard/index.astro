@@ -576,6 +576,8 @@ import PageLayout from "../../layout/PageLayout.astro";
       });
     }
 
-    initDashboard();
+    if (accessToken) {
+      initDashboard();
+    }
   </script>
 </PageLayout>

@@ -1,0 +1,570 @@
+---
+import PageLayout from "../../layout/PageLayout.astro";
+---
+
+<PageLayout title="Reportes y Estadísticas">
+  <!-- Loading State -->
+  <div id="reportes-loading" class="min-h-screen flex items-center justify-center">
+    <div class="text-center">
+      <div class="w-12 h-12 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+      <p class="theme-text-secondary text-lg">Cargando reportes...</p>
+    </div>
+  </div>
+
+  <!-- Access Denied -->
+  <div id="reportes-denied" class="hidden min-h-screen flex items-center justify-center">
+    <div class="text-center">
+      <svg class="w-20 h-20 mx-auto theme-text-muted mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+      </svg>
+      <h2 class="text-xl font-heading font-bold theme-text mb-2">Acceso Restringido</h2>
+      <p class="theme-text-muted mb-6">Solo los administradores pueden acceder a los reportes.</p>
+      <a href="/dashboard" class="btn-brand">Volver al Dashboard</a>
+    </div>
+  </div>
+
+  <!-- Reportes Content -->
+  <main id="reportes-content" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
+      <div>
+        <a href="/dashboard" class="inline-flex items-center gap-2 text-sm theme-text-muted hover:text-brand-500 transition-colors mb-3">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+          Volver al Dashboard
+        </a>
+        <h1 class="text-2xl sm:text-3xl font-heading font-bold theme-text">
+          📊 Reportes y Estadísticas
+        </h1>
+        <p class="mt-1 text-sm theme-text-muted">Vista general del rendimiento del equipo</p>
+      </div>
+      <div class="flex-shrink-0">
+        <button id="btn-download-pdf" class="btn-brand text-sm sm:text-base flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          <span>Descargar PDF</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+      <!-- Total Tickets -->
+      <div class="theme-card p-5 sm:p-6 relative overflow-hidden group">
+        <div class="absolute top-0 right-0 w-20 h-20 rounded-bl-full transition-all group-hover:w-24 group-hover:h-24" style="background: rgba(245, 158, 11, 0.1);"></div>
+        <div class="relative">
+          <p class="text-xs font-medium theme-text-muted uppercase tracking-wider mb-2">Total Tickets</p>
+          <p id="kpi-total" class="text-3xl font-heading font-bold" style="color: #f59e0b;">0</p>
+        </div>
+      </div>
+      <!-- Tasa de Resolución -->
+      <div class="theme-card p-5 sm:p-6 relative overflow-hidden group">
+        <div class="absolute top-0 right-0 w-20 h-20 rounded-bl-full transition-all group-hover:w-24 group-hover:h-24" style="background: rgba(16, 185, 129, 0.1);"></div>
+        <div class="relative">
+          <p class="text-xs font-medium theme-text-muted uppercase tracking-wider mb-2">Tasa de Resolución</p>
+          <p id="kpi-tasa" class="text-3xl font-heading font-bold" style="color: #10b981;">0%</p>
+        </div>
+      </div>
+      <!-- Tiempo Promedio -->
+      <div class="theme-card p-5 sm:p-6 relative overflow-hidden group">
+        <div class="absolute top-0 right-0 w-20 h-20 rounded-bl-full transition-all group-hover:w-24 group-hover:h-24" style="background: rgba(59, 130, 246, 0.1);"></div>
+        <div class="relative">
+          <p class="text-xs font-medium theme-text-muted uppercase tracking-wider mb-2">Tiempo Prom. Resolución</p>
+          <p id="kpi-tiempo" class="text-3xl font-heading font-bold" style="color: #3b82f6;">0h</p>
+        </div>
+      </div>
+      <!-- Top Técnico -->
+      <div class="theme-card p-5 sm:p-6 relative overflow-hidden group">
+        <div class="absolute top-0 right-0 w-20 h-20 rounded-bl-full transition-all group-hover:w-24 group-hover:h-24" style="background: rgba(227, 30, 36, 0.1);"></div>
+        <div class="relative">
+          <p class="text-xs font-medium theme-text-muted uppercase tracking-wider mb-2">Técnico Más Productivo</p>
+          <p id="kpi-top-tecnico" class="text-lg font-heading font-bold text-brand-500 truncate">—</p>
+          <p id="kpi-top-resueltos" class="text-xs theme-text-muted mt-1"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <!-- Distribución por Estatus (Dona) -->
+      <div class="theme-card p-6">
+        <h3 class="text-base font-heading font-semibold theme-text flex items-center gap-2 mb-4">
+          <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
+          </svg>
+          Distribución por Estatus
+        </h3>
+        <div class="flex justify-center" style="height: 280px;">
+          <canvas id="chart-estatus"></canvas>
+        </div>
+      </div>
+
+      <!-- Ranking de Técnicos (Barras) -->
+      <div class="theme-card p-6">
+        <h3 class="text-base font-heading font-semibold theme-text flex items-center gap-2 mb-4">
+          <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          Tickets Resueltos por Técnico
+        </h3>
+        <div style="height: 280px;">
+          <canvas id="chart-ranking"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tendencia Semanal (Línea) - Full Width -->
+    <div class="theme-card p-6 mb-8">
+      <h3 class="text-base font-heading font-semibold theme-text flex items-center gap-2 mb-4">
+        <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+        </svg>
+        Tendencia de Tickets (Últimas 8 Semanas)
+      </h3>
+      <div style="height: 300px;">
+        <canvas id="chart-tendencia"></canvas>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <script>
+    const API_BASE = "/api";
+    let accessToken = localStorage.getItem("accessToken");
+
+    if (!accessToken) {
+      window.location.replace("/");
+    }
+
+    async function refreshAccessToken() {
+      try {
+        const res = await fetch(`${API_BASE}/auth/refresh`, { credentials: "include" });
+        if (!res.ok) throw new Error("Token refresh failed");
+        const data = await res.json();
+        accessToken = data.accessToken;
+        localStorage.setItem("accessToken", accessToken);
+        return true;
+      } catch { return false; }
+    }
+
+    async function fetchWithAuth(url, options = {}) {
+      let res = await fetch(url, {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+          ...options.headers,
+        },
+        credentials: "include",
+      });
+
+      if (res.status === 401 || res.status === 403) {
+        const refreshed = await refreshAccessToken();
+        if (refreshed) {
+          res = await fetch(url, {
+            ...options,
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+              ...options.headers,
+            },
+            credentials: "include",
+          });
+        } else {
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("user");
+          window.location.replace("/");
+          return null;
+        }
+      }
+      return res;
+    }
+
+    // ── Helper para convertir el logo a base64 ──
+    function getLogoBase64() {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.src = '/logo_redexcom.png';
+        img.crossOrigin = 'Anonymous';
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL('image/png'));
+        };
+        img.onerror = () => {
+          resolve(null);
+        };
+      });
+    }
+
+    // ── Generar reporte PDF ──
+    async function generatePDF() {
+      const btn = document.getElementById("btn-download-pdf");
+      const btnText = btn.querySelector("span");
+      const originalHtml = btn.innerHTML;
+      
+      btn.disabled = true;
+      btnText.textContent = "Generando PDF...";
+
+      try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+          orientation: "portrait",
+          unit: "mm",
+          format: "a4"
+        });
+
+        const pageWidth = doc.internal.pageSize.getWidth(); // 210
+        const pageHeight = doc.internal.pageSize.getHeight(); // 297
+        const margin = 15;
+        const contentWidth = pageWidth - (margin * 2); // 180
+
+        // 1. Cargar Logo
+        const logoBase64 = await getLogoBase64();
+        if (logoBase64) {
+          doc.addImage(logoBase64, "PNG", margin, 12, 45, 18);
+        }
+
+        // 2. Cabecera
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(15);
+        doc.setTextColor(11, 33, 45); // #0B212D
+        doc.text("REPORTE DE SOPORTE TÉCNICO", 70, 20);
+
+        doc.setFont("Helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(71, 85, 105);
+        doc.text("Corporación RedexCom — Control de Incidencias", 70, 25);
+        
+        const now = new Date();
+        const formattedDate = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        doc.text(`Fecha de emisión: ${formattedDate}`, 70, 29);
+
+        // Línea roja corporativa
+        doc.setDrawColor(227, 30, 36); // #E31E24
+        doc.setLineWidth(0.8);
+        doc.line(margin, 35, pageWidth - margin, 35);
+
+        // 3. KPIs
+        const kpiTotal = document.getElementById("kpi-total").textContent;
+        const kpiTasa = document.getElementById("kpi-tasa").textContent;
+        const kpiTiempo = document.getElementById("kpi-tiempo").textContent;
+        const kpiTopTecnico = document.getElementById("kpi-top-tecnico").textContent;
+        const kpiTopResueltos = document.getElementById("kpi-top-resueltos").textContent;
+
+        doc.setFontSize(11);
+        doc.setFont("Helvetica", "bold");
+        doc.setTextColor(15, 23, 42); // slate 900
+        doc.text("Indicadores Clave de Rendimiento (KPIs)", margin, 45);
+
+        // Dibujar 4 cajas para los KPIs
+        const boxWidth = (contentWidth - 9) / 4; // 180 - 9 = 171 / 4 = 42.75
+        const boxHeight = 22;
+        const boxY = 49;
+
+        const kpiList = [
+          { label: "Total Tickets", val: kpiTotal, color: [245, 158, 11] },
+          { label: "Tasa Resolución", val: kpiTasa, color: [16, 185, 129] },
+          { label: "Tiempo Prom.", val: kpiTiempo, color: [59, 130, 246] },
+          { label: "Top Técnico", val: kpiTopTecnico.split(' ')[0] || "—", color: [227, 30, 36], sub: kpiTopResueltos }
+        ];
+
+        kpiList.forEach((kpi, idx) => {
+          const boxX = margin + idx * (boxWidth + 3);
+          
+          // Fondo gris claro
+          doc.setFillColor(248, 250, 252);
+          doc.roundedRect(boxX, boxY, boxWidth, boxHeight, 2, 2, "F");
+          
+          // Borde fino
+          doc.setDrawColor(226, 232, 240);
+          doc.setLineWidth(0.2);
+          doc.roundedRect(boxX, boxY, boxWidth, boxHeight, 2, 2, "D");
+
+          // Etiqueta
+          doc.setFontSize(7);
+          doc.setFont("Helvetica", "bold");
+          doc.setTextColor(100, 116, 139);
+          doc.text(kpi.label.toUpperCase(), boxX + boxWidth/2, boxY + 6, { align: "center" });
+
+          // Valor
+          doc.setFontSize(idx === 3 ? 9 : 12);
+          doc.setFont("Helvetica", "bold");
+          doc.setTextColor(kpi.color[0], kpi.color[1], kpi.color[2]);
+          doc.text(kpi.val, boxX + boxWidth/2, boxY + 14, { align: "center" });
+
+          // Subtexto opcional
+          if (kpi.sub) {
+            doc.setFontSize(5.5);
+            doc.setFont("Helvetica", "normal");
+            doc.setTextColor(148, 163, 184);
+            doc.text(kpi.sub, boxX + boxWidth/2, boxY + 19, { align: "center" });
+          }
+        });
+
+        // 4. Gráficos
+        doc.setFontSize(11);
+        doc.setFont("Helvetica", "bold");
+        doc.setTextColor(15, 23, 42);
+        doc.text("Gráficos de Distribución y Productividad", margin, 80);
+
+        // Capturar imágenes de los gráficos
+        const chartEstatusCanvas = document.getElementById("chart-estatus");
+        const chartRankingCanvas = document.getElementById("chart-ranking");
+        const chartTendenciaCanvas = document.getElementById("chart-tendencia");
+
+        const chartEstatusImg = chartEstatusCanvas.toDataURL("image/png");
+        const chartRankingImg = chartRankingCanvas.toDataURL("image/png");
+        const chartTendenciaImg = chartTendenciaCanvas.toDataURL("image/png");
+
+        // Dibujar cajas oscuras de fondo para los gráficos para que se lean las etiquetas blancas
+        const chartBoxY = 84;
+        const chartBoxWidth = (contentWidth - 6) / 2;
+        const chartBoxHeight = 84;
+
+        // Gráfico 1 (Estatus)
+        doc.setFillColor(11, 33, 45); // #0B212D
+        doc.roundedRect(margin, chartBoxY, chartBoxWidth, chartBoxHeight, 3, 3, "F");
+        doc.addImage(chartEstatusImg, "PNG", margin + (chartBoxWidth - 66)/2, chartBoxY + 5, 66, 66);
+        doc.setFontSize(8);
+        doc.setFont("Helvetica", "bold");
+        doc.setTextColor(255, 255, 255);
+        doc.text("DISTRIBUCIÓN POR ESTATUS", margin + chartBoxWidth/2, chartBoxY + 77, { align: "center" });
+
+        // Gráfico 2 (Ranking)
+        const rankingX = margin + chartBoxWidth + 6;
+        doc.setFillColor(11, 33, 45);
+        doc.roundedRect(rankingX, chartBoxY, chartBoxWidth, chartBoxHeight, 3, 3, "F");
+        doc.addImage(chartRankingImg, "PNG", rankingX + (chartBoxWidth - 78)/2, chartBoxY + 5, 78, 62);
+        doc.setFontSize(8);
+        doc.setFont("Helvetica", "bold");
+        doc.setTextColor(255, 255, 255);
+        doc.text("TICKETS RESUELTOS POR TÉCNICO", rankingX + chartBoxWidth/2, chartBoxY + 77, { align: "center" });
+
+        // 5. Gráfico 3 (Tendencia)
+        const tendenciaY = 176;
+        const tendenciaHeight = 75;
+        doc.setFillColor(11, 33, 45);
+        doc.roundedRect(margin, tendenciaY, contentWidth, tendenciaHeight, 3, 3, "F");
+        doc.addImage(chartTendenciaImg, "PNG", margin + 5, tendenciaY + 4, contentWidth - 10, tendenciaHeight - 12);
+        doc.setFontSize(8);
+        doc.setFont("Helvetica", "bold");
+        doc.setTextColor(255, 255, 255);
+        doc.text("TENDENCIA DE TICKETS (ÚLTIMAS 8 SEMANAS)", margin + contentWidth/2, tendenciaY + 71, { align: "center" });
+
+        // 6. Pie de página
+        doc.setFontSize(8);
+        doc.setFont("Helvetica", "normal");
+        doc.setTextColor(148, 163, 184); // slate 400
+        doc.text("DOCUMENTO DE USO INTERNO EXCLUSIVO — CORPORACIÓN REDEXCOM", pageWidth / 2, 285, { align: "center" });
+        doc.text("Pág. 1 de 1", pageWidth - margin, 285, { align: "right" });
+
+        doc.save(`reporte_redexcom_${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}.pdf`);
+      } catch (error) {
+        console.error("Error al generar PDF:", error);
+        alert("Ocurrió un error al generar el PDF del reporte.");
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = originalHtml;
+    }
+
+    async function initReportes() {
+      const loadingEl = document.getElementById("reportes-loading");
+      const contentEl = document.getElementById("reportes-content");
+      const deniedEl = document.getElementById("reportes-denied");
+
+      // 1. Verificar autenticación
+      if (!accessToken) {
+        const refreshed = await refreshAccessToken();
+        if (!refreshed) {
+          window.location.replace("/");
+          return;
+        }
+      }
+
+      // 2. Obtener datos del usuario
+      const userRes = await fetchWithAuth(`${API_BASE}/auth/user`);
+      if (!userRes || !userRes.ok) {
+        window.location.replace("/");
+        return;
+      }
+      const currentUser = await userRes.json();
+
+      // 3. Verificar rol de admin
+      const isAdmin = currentUser.rol === "admin" || currentUser.rol === "super_admin";
+      if (!isAdmin) {
+        loadingEl.classList.add("hidden");
+        deniedEl.classList.remove("hidden");
+        return;
+      }
+
+      // 4. Obtener estadísticas avanzadas
+      const statsRes = await fetchWithAuth(`${API_BASE}/tickets/stats/advanced`);
+      if (!statsRes || !statsRes.ok) {
+        loadingEl.classList.add("hidden");
+        contentEl.classList.remove("hidden");
+        return;
+      }
+      const data = await statsRes.json();
+
+      // 5. Llenar KPIs
+      const total = data.distribucion.total;
+      const resueltos = data.distribucion.resueltos;
+      const tasa = total > 0 ? Math.round((resueltos / total) * 100) : 0;
+
+      document.getElementById("kpi-total").textContent = total;
+      document.getElementById("kpi-tasa").textContent = `${tasa}%`;
+      document.getElementById("kpi-tiempo").textContent = `${data.tiempo_promedio.promedio_horas}h`;
+
+      if (data.top_tecnico) {
+        document.getElementById("kpi-top-tecnico").textContent = `${data.top_tecnico.nombre} ${data.top_tecnico.apellido}`;
+        document.getElementById("kpi-top-resueltos").textContent = `${data.top_tecnico.resueltos} tickets resueltos`;
+      }
+
+      // 6. Renderizar gráficos
+      const isDark = document.documentElement.classList.contains("dark");
+      const textColor = isDark ? "#94a3b8" : "#64748b";
+      const gridColor = isDark ? "rgba(148, 163, 184, 0.1)" : "rgba(0, 0, 0, 0.06)";
+
+      // Chart defaults
+      Chart.defaults.color = textColor;
+      Chart.defaults.font.family = "'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+
+      // Dona — Distribución por Estatus
+      new Chart(document.getElementById("chart-estatus"), {
+        type: "doughnut",
+        data: {
+          labels: ["Pendientes", "En Proceso", "Resueltos"],
+          datasets: [{
+            data: [data.distribucion.pendientes, data.distribucion.en_proceso, data.distribucion.resueltos],
+            backgroundColor: ["#ef4444", "#3b82f6", "#10b981"],
+            borderColor: isDark ? "#1e293b" : "#ffffff",
+            borderWidth: 3,
+            hoverOffset: 8,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: "65%",
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: {
+                padding: 20,
+                usePointStyle: true,
+                pointStyleWidth: 12,
+                font: { size: 12, weight: "600" },
+              },
+            },
+          },
+        },
+      });
+
+      // Barras — Ranking de Técnicos
+      const rankingLabels = data.ranking_tecnicos.map(t => `${t.tecnico_nombre} ${t.tecnico_apellido}`);
+      const rankingData = data.ranking_tecnicos.map(t => t.resueltos);
+
+      new Chart(document.getElementById("chart-ranking"), {
+        type: "bar",
+        data: {
+          labels: rankingLabels,
+          datasets: [{
+            label: "Tickets Resueltos",
+            data: rankingData,
+            backgroundColor: "rgba(227, 30, 36, 0.8)",
+            borderColor: "#E31E24",
+            borderWidth: 1,
+            borderRadius: 6,
+            barPercentage: 0.6,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: "y",
+          scales: {
+            x: {
+              beginAtZero: true,
+              ticks: { stepSize: 1, font: { size: 11 } },
+              grid: { color: gridColor },
+            },
+            y: {
+              grid: { display: false },
+              ticks: { font: { size: 12, weight: "600" } },
+            },
+          },
+          plugins: {
+            legend: { display: false },
+          },
+        },
+      });
+
+      // Línea — Tendencia Semanal
+      const trendLabels = data.tendencia_semanal.map(t => {
+        const parts = t.semana.split("-W");
+        return `Sem ${parts[1]}`;
+      });
+      const trendData = data.tendencia_semanal.map(t => t.total);
+
+      new Chart(document.getElementById("chart-tendencia"), {
+        type: "line",
+        data: {
+          labels: trendLabels,
+          datasets: [{
+            label: "Tickets Creados",
+            data: trendData,
+            borderColor: "#E31E24",
+            backgroundColor: "rgba(227, 30, 36, 0.1)",
+            borderWidth: 3,
+            pointBackgroundColor: "#E31E24",
+            pointBorderColor: isDark ? "#1e293b" : "#ffffff",
+            pointBorderWidth: 3,
+            pointRadius: 6,
+            pointHoverRadius: 9,
+            fill: true,
+            tension: 0.4,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              grid: { color: gridColor },
+              ticks: { font: { size: 12, weight: "600" } },
+            },
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 1, font: { size: 11 } },
+              grid: { color: gridColor },
+            },
+          },
+          plugins: {
+            legend: { display: false },
+          },
+        },
+      });
+
+      // 7. Mostrar contenido
+      loadingEl.classList.add("hidden");
+      contentEl.classList.remove("hidden");
+
+      // 8. Event listener para descargar PDF
+      document.getElementById("btn-download-pdf")?.addEventListener("click", generatePDF);
+    }
+
+    if (accessToken) {
+      initReportes();
+    }
+  </script>
+</PageLayout>

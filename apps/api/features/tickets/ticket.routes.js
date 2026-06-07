@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createTicketRouteSchema, updateTicketStatusRouteSchema } from './ticket.routes.schemas.js';
+import { createTicketRouteSchema, updateTicketStatusRouteSchema, resolveTicketChecklistSchema, createComentarioSchema } from './ticket.routes.schemas.js';
 import ticketRepository from './ticket.repository.js';
 import userRepository from '../user/user.repository.js';
 import { authenticate, requireAdmin } from '../auth/auth.middlewares.js';
@@ -59,6 +59,27 @@ ticketRouter.get('/weekly', async (req, res, next) => {
     }
 
     return res.status(200).json(tickets);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ── GET /api/tickets/stats/advanced ── Estadísticas avanzadas (solo admin)
+ticketRouter.get('/stats/advanced', requireAdmin, async (req, res, next) => {
+  try {
+    const stats = ticketRepository.getTicketStats();
+    const ranking = ticketRepository.getTicketsByTecnicoRanking();
+    const trend = ticketRepository.getWeeklyTicketTrend();
+    const avgTime = ticketRepository.getAverageResolutionTime();
+    const topTecnico = ticketRepository.getTopTecnico();
+
+    return res.status(200).json({
+      distribucion: stats,
+      ranking_tecnicos: ranking,
+      tendencia_semanal: trend,
+      tiempo_promedio: avgTime,
+      top_tecnico: topTecnico,
+    });
   } catch (error) {
     next(error);
   }
@@ -168,13 +189,33 @@ ticketRouter.patch('/:id/status', requireAdmin, async (req, res, next) => {
       return res.status(404).json({ error: 'Ticket no encontrado' });
     }
 
-    // 3. Actualizar el estatus
+    // 3. Si se resuelve, validar y guardar el checklist de cierre
+    if (body.estatus === 'resuelto') {
+      const checklistData = resolveTicketChecklistSchema.parse({
+        cambio_equipo: body.cambio_equipo,
+        test_velocidad: body.test_velocidad,
+        potencia_optica: body.potencia_optica,
+        observaciones: body.observaciones,
+      });
+
+      // Guardar el registro de cierre
+      ticketRepository.createTicketCierre({
+        ticketId: Number(req.params.id),
+        cambioEquipo: checklistData.cambio_equipo,
+        testVelocidad: checklistData.test_velocidad,
+        potenciaOptica: checklistData.potencia_optica,
+        observaciones: checklistData.observaciones,
+        cerradoPor: req.user.id,
+      });
+    }
+
+    // 4. Actualizar el estatus
     const updatedTicket = ticketRepository.updateTicketStatus({
       id: Number(req.params.id),
       estatus: body.estatus,
     });
 
-    // 4. Si el ticket se resuelve, enviar correo al administrador que lo creó
+    // 5. Si el ticket se resuelve, enviar correo al administrador que lo creó
     if (body.estatus === 'resuelto') {
       try {
         const creador = userRepository.findUserById(existingTicket.creador_id);
@@ -208,6 +249,146 @@ ticketRouter.patch('/:id/status', requireAdmin, async (req, res, next) => {
   }
 });
 
+// ── GET /api/tickets/:id/cierre ── Obtener checklist de cierre de un ticket
+ticketRouter.get('/:id/cierre', async (req, res, next) => {
+  try {
+    const ticket = ticketRepository.findTicketById(Number(req.params.id));
+    if (!ticket) {
+      return res.status(404).json({ error: 'Ticket no encontrado' });
+    }
+
+    // Si es técnico, solo puede ver sus propios tickets
+    if (req.user.rol === 'tecnico' && ticket.tecnico_id !== req.user.id) {
+      return res.status(403).json({ error: 'No tienes permisos para ver este ticket' });
+    }
+
+    const cierre = ticketRepository.findCierreByTicketId(Number(req.params.id));
+    if (!cierre) {
+      return res.status(404).json({ error: 'Este ticket no tiene registro de cierre' });
+    }
+
+    return res.status(200).json(cierre);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ── GET /api/tickets/:id/comentarios ── Listar comentarios de un ticket
+ticketRouter.get('/:id/comentarios', async (req, res, next) => {
+  try {
+    const ticket = ticketRepository.findTicketById(Number(req.params.id));
+    if (!ticket) {
+      return res.status(404).json({ error: 'Ticket no encontrado' });
+    }
+
+    // Si es técnico, solo puede ver sus propios tickets
+    if (req.user.rol === 'tecnico' && ticket.tecnico_id !== req.user.id) {
+      return res.status(403).json({ error: 'No tienes permisos para ver este ticket' });
+    }
+
+    const comentarios = ticketRepository.findComentariosByTicketId(Number(req.params.id));
+    return res.status(200).json(comentarios);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ── POST /api/tickets/:id/comentarios ── Crear comentario interno
+ticketRouter.post('/:id/comentarios', async (req, res, next) => {
+  try {
+    const body = createComentarioSchema.body.parse(req.body);
+
+    const ticket = ticketRepository.findTicketById(Number(req.params.id));
+    if (!ticket) {
+      return res.status(404).json({ error: 'Ticket no encontrado' });
+    }
+
+    // Si es técnico, solo puede comentar en sus propios tickets
+    if (req.user.rol === 'tecnico' && ticket.tecnico_id !== req.user.id) {
+      return res.status(403).json({ error: 'No tienes permisos para comentar en este ticket' });
+    }
+
+    const comentario = ticketRepository.createComentario({
+      ticketId: Number(req.params.id),
+      usuarioId: req.user.id,
+      contenido: body.contenido,
+    });
+
+    // Enviar correos de notificación de forma asíncrona (sin bloquear la respuesta)
+    (async () => {
+      try {
+        const tecnico = userRepository.findUserById(ticket.tecnico_id);
+        const creador = userRepository.findUserById(ticket.creador_id);
+        const autor = req.user; // { id, email, rol, nombre }
+
+        const subject = `Nuevo comentario en Ticket #${ticket.id} — RedexCom`;
+        const actionUrl = `http://localhost:4321/dashboard/tickets/${ticket.id}`;
+        
+        const isCommenterAdmin = autor.rol === 'admin' || autor.rol === 'super_admin';
+        const roleLabel = isCommenterAdmin ? 'Administrador' : 'Técnico';
+
+        // 1. Si el autor NO es el técnico, enviar al técnico
+        if (tecnico && autor.id !== tecnico.id) {
+          const emailBody = email(`
+            <h2 style="margin:0 0 6px;font-size:20px;font-weight:700;color:#0f172a">Hola ${tecnico.nombre},</h2>
+            <p style="margin:0 0 16px;color:#475569;font-size:15px">Se ha agregado una nueva nota interna al ticket asignado <strong>#${ticket.id}</strong>.</p>
+            <p style="margin:0 0 12px;color:#334155;font-weight:600">${autor.nombre} (${roleLabel}) escribió:</p>
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #E31E24; border-radius:8px; padding:16px; margin:16px 0; font-style:italic; color:#334155; font-size:14px; line-height:1.5;">
+              "${body.contenido}"
+            </div>
+            <p style="margin:20px 0 8px;color:#334155;font-weight:600;font-size:14px;">Detalles del Ticket:</p>
+            ${ficha([
+              ['Cliente', ticket.cliente_nombre],
+              ['Dirección', ticket.cliente_direccion],
+              ['Falla', ticket.falla_descripcion],
+              ['Estatus', ticket.estatus.toUpperCase()],
+            ])}
+            ${btn('Ver Ticket en el Dashboard', actionUrl)}
+          `);
+
+          await nodemailerService.sendMail({
+            to: tecnico.email,
+            subject,
+            html: emailBody,
+          });
+        }
+
+        // 2. Si el autor NO es el creador (admin), enviar al creador
+        if (creador && autor.id !== creador.id && (tecnico ? creador.email !== tecnico.email : true)) {
+          const emailBody = email(`
+            <h2 style="margin:0 0 6px;font-size:20px;font-weight:700;color:#0f172a">Hola ${creador.nombre},</h2>
+            <p style="margin:0 0 16px;color:#475569;font-size:15px">Se ha agregado una nueva nota interna al ticket creado <strong>#${ticket.id}</strong>.</p>
+            <p style="margin:0 0 12px;color:#334155;font-weight:600">${autor.nombre} (${roleLabel}) escribió:</p>
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #E31E24; border-radius:8px; padding:16px; margin:16px 0; font-style:italic; color:#334155; font-size:14px; line-height:1.5;">
+              "${body.contenido}"
+            </div>
+            <p style="margin:20px 0 8px;color:#334155;font-weight:600;font-size:14px;">Detalles del Ticket:</p>
+            ${ficha([
+              ['Cliente', ticket.cliente_nombre],
+              ['Dirección', ticket.cliente_direccion],
+              ['Falla', ticket.falla_descripcion],
+              ['Estatus', ticket.estatus.toUpperCase()],
+            ])}
+            ${btn('Ver Ticket en el Dashboard', actionUrl)}
+          `);
+
+          await nodemailerService.sendMail({
+            to: creador.email,
+            subject,
+            html: emailBody,
+          });
+        }
+      } catch (err) {
+        console.error('Error al enviar notificaciones de comentarios por correo:', err);
+      }
+    })();
+
+    return res.status(201).json(comentario);
+  } catch (error) {
+    next(error);
+  }
+});
+
 // ── DELETE /api/tickets/:id ── Eliminar ticket (solo admin)
 ticketRouter.delete('/:id', requireAdmin, async (req, res, next) => {
   try {
@@ -227,3 +408,4 @@ ticketRouter.delete('/:id', requireAdmin, async (req, res, next) => {
 });
 
 export default ticketRouter;
+

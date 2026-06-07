@@ -67,7 +67,44 @@ const createTicketsTable = () => {
   console.log('Tabla de tickets creada!');
 };
 
+const createTicketCierresTable = () => {
+  const statement = db.prepare(`
+    CREATE TABLE IF NOT EXISTS ticket_cierres (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ticket_id INTEGER NOT NULL UNIQUE,
+      cambio_equipo BOOLEAN NOT NULL DEFAULT false,
+      test_velocidad BOOLEAN NOT NULL DEFAULT false,
+      potencia_optica TEXT,
+      observaciones TEXT NOT NULL,
+      cerrado_por INTEGER NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (ticket_id) REFERENCES tickets(id),
+      FOREIGN KEY (cerrado_por) REFERENCES users(id)
+    )
+  `);
+  statement.run();
+  console.log('Tabla de cierres de ticket creada!');
+};
+
+const createTicketComentariosTable = () => {
+  const statement = db.prepare(`
+    CREATE TABLE IF NOT EXISTS ticket_comentarios (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ticket_id INTEGER NOT NULL,
+      usuario_id INTEGER NOT NULL,
+      contenido TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (ticket_id) REFERENCES tickets(id),
+      FOREIGN KEY (usuario_id) REFERENCES users(id)
+    )
+  `);
+  statement.run();
+  console.log('Tabla de comentarios de ticket creada!');
+};
+
 const resetDb = () => {
+  db.prepare('DROP TABLE IF EXISTS ticket_comentarios').run();
+  db.prepare('DROP TABLE IF EXISTS ticket_cierres').run();
   db.prepare('DROP TABLE IF EXISTS tickets').run();
   db.prepare('DROP TABLE IF EXISTS verification_codes').run();
   db.prepare('DROP TABLE IF EXISTS sessions').run();
@@ -81,7 +118,10 @@ export const createTables = () => {
   createSessionsTable();
   createVerificationCodesTable();
   createTicketsTable();
+  createTicketCierresTable();
+  createTicketComentariosTable();
   console.log(' Todas las tablas creadas exitosamente!');
 };
 
 createTables();
+
