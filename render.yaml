@@ -1,11 +1,10 @@
 services:
-  # 1. API Express Backend
+  # 1. Unified Fullstack Web Service
   - type: web
-    name: redexcom-api
+    name: redexcom-fullstack
     env: node
     plan: free
-    rootDir: apps/api
-    buildCommand: npm install
+    buildCommand: npm run build
     startCommand: npm start
     envVars:
       - key: SUPABASE_URL
@@ -24,19 +23,5 @@ services:
         sync: false
       - key: ENV_MODE
         value: prod
-      - key: FRONTEND_URL
-        sync: false
-
-  # 2. Astro Client Frontend
-  - type: web
-    name: redexcom-client
-    env: node
-    plan: free
-    rootDir: apps/client
-    buildCommand: npm install && npm run build
-    startCommand: node dist/server/entry.mjs
-    envVars:
       - key: NODE_ENV
         value: production
-      - key: HOST
-        value: 0.0.0.0

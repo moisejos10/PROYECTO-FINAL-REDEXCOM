@@ -27,6 +27,17 @@ app.use('/api/auth', authRouter);
 // Rutas protegidas (requieren autenticación)
 app.use('/api/tickets', ticketRouter);
 
+// Servir frontend compilado en producción (Astro SSR)
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static('dist/client'));
+  try {
+    const { handler: ssrHandler } = await import('./dist/server/entry.mjs');
+    app.use(ssrHandler);
+  } catch (error) {
+    console.error('⚠️ No se pudo cargar el middleware de Astro:', error);
+  }
+}
+
 // Manejo global de errores
 app.use((err, req, res, next) => {
   console.log(err);

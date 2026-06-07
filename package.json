@@ -6,7 +6,9 @@
   "scripts": {
     "client:dev": "npm run dev -w client",
     "api:dev": "npm run dev -w api",
-    "api:tables": "npm run tables:create -w api"
+    "api:tables": "npm run tables:create -w api",
+    "build": "npm run build -w client && node -e \"const fs=require('fs'); fs.rmSync('./apps/api/dist', {recursive:true, force:true}); fs.renameSync('./apps/client/dist', './apps/api/dist')\"",
+    "start": "npm run start -w api"
   },
   "keywords": [],
   "author": "",
