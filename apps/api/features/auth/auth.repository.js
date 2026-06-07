@@ -1,60 +1,68 @@
-import db from '../../db/index.js';
-// eslint-disable-next-line no-unused-vars
-import * as z from 'zod';
-// eslint-disable-next-line no-unused-vars
-import { sessionSchema } from './auth.schemas.js';
-
-/** @typedef { z.infer<typeof sessionSchema> } Session */
+import supabase from '../../db/index.js';
 
 /**
  * Crea una sesión
  * @param {Object} payload
- * @param {Session['jwtid']} payload.jwtid - El id del token
- * @param {Session['user_id']} payload.userId - El id del usuario
- * @returns {Session}
+ * @param {string} payload.jwtid - El id del token
+ * @param {number} payload.userId - El id del usuario
+ * @returns {Promise<Object>}
  */
-const createSession = ({ jwtid, userId }) => {
-  const smtm = db.prepare('INSERT INTO sessions (jwtid, user_id) VALUES (?,?) RETURNING *');
-  const createdSession = smtm.get(jwtid, userId);
-  return createdSession;
+const createSession = async ({ jwtid, userId }) => {
+  const { data, error } = await supabase
+    .from('sessions')
+    .insert({ jwtid, user_id: userId })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
 };
 
 /**
  * Encuentra una sesión por su id de JWT
  * @param {Object} payload
- * @param {Session['jwtid']} payload.jwtid
- * @returns {Session}
+ * @param {string} payload.jwtid
+ * @returns {Promise<Object|null>}
  */
-const findSessionByJwtId = ({ jwtid }) => {
-  const smtm = db.prepare('SELECT * FROM sessions WHERE jwtid = ?');
-  const session = smtm.get(jwtid);
-  return session;
+const findSessionByJwtId = async ({ jwtid }) => {
+  const { data, error } = await supabase
+    .from('sessions')
+    .select('*')
+    .eq('jwtid', jwtid)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
 };
 
 /**
  * Elimina una sesión basandose en el id de la sesión
- * @param {Session['id']} id
- * @returns {void}
+ * @param {number} id
+ * @returns {Promise<void>}
  */
-const deleteSession = (id) => {
-  const smtm = db.prepare('DELETE FROM sessions WHERE id = ?');
-  smtm.run(id);
+const deleteSession = async (id) => {
+  const { error } = await supabase
+    .from('sessions')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
 };
 
 /**
  * Actualiza el JWT de una sesión en la base de datos
  * @param {Object} payload
- * @param {Session['jwtid']} payload.jwtid
- * @param {Session['id']} payload.id
- * @returns {void}
+ * @param {string} payload.jwtid
+ * @param {number} payload.id
+ * @returns {Promise<void>}
  */
-const updateSessionJwtId = ({ jwtid, id }) => {
-  const smtm = db.prepare(`
-    UPDATE sessions
-    SET jwtid = ?
-    WHERE id = ?
-  `);
-  smtm.run(jwtid, id);
+const updateSessionJwtId = async ({ jwtid, id }) => {
+  const { error } = await supabase
+    .from('sessions')
+    .update({ jwtid })
+    .eq('id', id);
+
+  if (error) throw error;
 };
 
 const authRepository = { createSession, findSessionByJwtId, deleteSession, updateSessionJwtId };

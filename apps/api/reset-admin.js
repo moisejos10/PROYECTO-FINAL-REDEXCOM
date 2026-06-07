@@ -1,34 +1,61 @@
-import db from './db/index.js';
+import supabase from './db/index.js';
 import bcrypt from 'bcrypt';
 
 async function resetAdmin() {
-  // 1. Borra todos los datos existentes (limpieza total)
-  db.prepare('DELETE FROM sessions').run();
-  db.prepare('DELETE FROM verification_codes').run();
-  db.prepare('DELETE FROM users').run();
-  console.log('✅ Base de datos limpiada.');
+  try {
+    console.log('⏳ Limpiando base de datos en Supabase...');
 
-  const insertUser = db.prepare(`
-    INSERT INTO users (nombre, apellido, email, password_hash, rol, email_verified)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `);
+    // 1. Borrar datos en orden de dependencias de FK
+    await supabase.from('ticket_cierres').delete().neq('id', 0);
+    await supabase.from('ticket_comentarios').delete().neq('id', 0);
+    await supabase.from('tickets').delete().neq('id', 0);
+    await supabase.from('sessions').delete().neq('id', 0);
+    await supabase.from('verification_codes').delete().neq('id', 0);
+    await supabase.from('users').delete().neq('id', 0);
+    
+    console.log('✅ Base de datos limpiada.');
 
-  // 2. Crea el administrador principal
-  const adminHash = await bcrypt.hash('admin123*', 10);
-  insertUser.run('Moise', 'Sanchez', 'moisejos10@gmail.com', adminHash, 'admin', 1);
-  console.log(' Admin     → moisejos10@gmail.com / admin123*');
+    // 2. Crear el administrador principal
+    const adminHash = await bcrypt.hash('admin123*', 10);
+    const { data: adminUser, error: adminErr } = await supabase
+      .from('users')
+      .insert({
+        nombre: 'Moise',
+        apellido: 'Sanchez',
+        email: 'moisejos10@gmail.com',
+        password_hash: adminHash,
+        rol: 'admin',
+        email_verified: true
+      })
+      .select()
+      .single();
 
-  // 3. Técnicos de prueba (email_verified = 1 para saltarse la verificación)
-  const techHash = await bcrypt.hash('tecnico123', 10);
-  insertUser.run('carlos', 'rodriguez', 'carlos.rodriguez@redexcom.com', techHash, 'tecnico', 1);
-  insertUser.run('Maria',  'Gonzalez',  'maria.gonzalez@redexcom.com',   techHash, 'tecnico', 1);
-  insertUser.run('Jose',   'Martinez',  'jose.martinez@redexcom.com',     techHash, 'tecnico', 1);
+    if (adminErr) throw adminErr;
+    console.log('💼 Admin creado → moisejos10@gmail.com / admin123*');
 
-  console.log('Técnico 1 creado   → carlos.rodriguez@redexcom.com / tecnico123');
-  console.log(' Técnico 2 creado   → maria.gonzalez@redexcom.com  / tecnico123');
-  console.log('Técnico 3 creado   → jose.martinez@redexcom.com   / tecnico123');
-  console.log('');
-  console.log(' Sistema listo para la presentacion!');
+    // 3. Técnicos de prueba
+    const techHash = await bcrypt.hash('tecnico123', 10);
+    const tecnicos = [
+      { nombre: 'carlos', apellido: 'rodriguez', email: 'carlos.rodriguez@redexcom.com', password_hash: techHash, rol: 'tecnico', email_verified: true },
+      { nombre: 'Maria', apellido: 'Gonzalez', email: 'maria.gonzalez@redexcom.com', password_hash: techHash, rol: 'tecnico', email_verified: true },
+      { nombre: 'Jose', apellido: 'Martinez', email: 'jose.martinez@redexcom.com', password_hash: techHash, rol: 'tecnico', email_verified: true }
+    ];
+
+    const { error: techErr } = await supabase
+      .from('users')
+      .insert(tecnicos);
+
+    if (techErr) throw techErr;
+
+    console.log('🛠️ Técnicos creados:');
+    console.log('   → carlos.rodriguez@redexcom.com / tecnico123');
+    console.log('   → maria.gonzalez@redexcom.com / tecnico123');
+    console.log('   → jose.martinez@redexcom.com / tecnico123');
+    console.log('');
+    console.log('🚀 ¡Sistema listo para la presentación!');
+  } catch (error) {
+    console.error('❌ Error al resetear base de datos:', error);
+  }
 }
 
 resetAdmin();

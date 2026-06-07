@@ -7,13 +7,14 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "dev": "node --env-file=.env --watch index.js",
     "tables:create": "node --env-file=.env ./db/tables.js",
     "reset-admin": "node --env-file=.env reset-admin.js"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.107.0",
     "bcrypt": "^6.0.0",
-    "better-sqlite3": "^12.6.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "express": "^5.2.1",

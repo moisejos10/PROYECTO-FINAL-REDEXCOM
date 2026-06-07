@@ -1,94 +1,110 @@
-import db from '../../db/index.js';
-// eslint-disable-next-line no-unused-vars
-import * as z from 'zod';
-// eslint-disable-next-line no-unused-vars
-import { UserSchema } from './user.schemas.js';
-
-/** @typedef { z.infer<typeof UserSchema> } User */
+import supabase from '../../db/index.js';
 
 /**
  * Crea un usuario en la base de datos
  * @param {Object} payload
- * @param {User['nombre']} payload.nombre - El nombre del usuario
- * @param {User['apellido']} payload.apellido - El apellido del usuario
- * @param {User['email']} payload.email - El correo del usuario
- * @param {string} payload.passwordHash - La contraseña encriptada
- * @returns {User}
+ * @param {string} payload.nombre
+ * @param {string} payload.apellido
+ * @param {string} payload.email
+ * @param {string} payload.passwordHash
+ * @returns {Promise<Object>}
  */
-const createUser = ({ nombre, apellido, email, passwordHash }) => {
-  const smtm = db.prepare(`
-    INSERT INTO users (nombre, apellido, email, password_hash)
-    VALUES (?, ?, ?, ?) RETURNING *
-  `);
+const createUser = async ({ nombre, apellido, email, passwordHash }) => {
+  const { data, error } = await supabase
+    .from('users')
+    .insert({ nombre, apellido, email, password_hash: passwordHash })
+    .select()
+    .single();
 
-  const createdUser = smtm.get(nombre, apellido, email, passwordHash);
-  return createdUser;
+  if (error) throw error;
+  return data;
 };
 
 /**
  * Elimina un usuario por su id
- * @param {User['id']} id - El id del usuario a eliminar
- * @returns {void}
+ * @param {number} id
+ * @returns {Promise<void>}
  */
-const deleteUserById = (id) => {
-  const smtm = db.prepare('DELETE FROM users WHERE id = ?');
-  smtm.run(id);
+const deleteUserById = async (id) => {
+  const { error } = await supabase
+    .from('users')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
 };
 
 /**
  * Busca un usuario por su email
- * @param {User['email']} email - El correo del usuario
- * @returns {User}
+ * @param {string} email
+ * @returns {Promise<Object|null>}
  */
-const findUserByEmail = (email) => {
-  const smtm = db.prepare('SELECT * FROM users WHERE email = ?');
-  const user = smtm.get(email);
-  return user;
+const findUserByEmail = async (email) => {
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('email', email)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
 };
 
 /**
  * Obtener todos los usuarios
- * @returns {User[]}
+ * @returns {Promise<Array>}
  */
-const findUsers = () => {
-  const smtm = db.prepare('SELECT id, nombre, apellido, email, rol, email_verified, created_at FROM users');
-  const users = smtm.all();
-  return users;
+const findUsers = async () => {
+  const { data, error } = await supabase
+    .from('users')
+    .select('id, nombre, apellido, email, rol, email_verified, created_at');
+
+  if (error) throw error;
+  return data;
 };
 
 /**
  * Marca el email de un usuario como verificado
- * @param {User['id']} id - El id del usuario
- * @returns {void}
+ * @param {number} id
+ * @returns {Promise<void>}
  */
-const updateEmailVerify = (id) => {
-  const smtm = db.prepare(`
-    UPDATE users
-    SET email_verified = ?
-    WHERE id = ?
-  `);
-  smtm.run(1, id);
+const updateEmailVerify = async (id) => {
+  const { error } = await supabase
+    .from('users')
+    .update({ email_verified: true })
+    .eq('id', id);
+
+  if (error) throw error;
 };
 
 /**
  * Obtiene todos los usuarios con rol de técnico
- * @returns {User[]}
+ * @returns {Promise<Array>}
  */
-const findTecnicos = () => {
-  const smtm = db.prepare("SELECT id, nombre, apellido, email FROM users WHERE rol = 'tecnico'");
-  const tecnicos = smtm.all();
-  return tecnicos;
+const findTecnicos = async () => {
+  const { data, error } = await supabase
+    .from('users')
+    .select('id, nombre, apellido, email')
+    .eq('rol', 'tecnico');
+
+  if (error) throw error;
+  return data;
 };
 
 /**
  * Busca un usuario por su ID
- * @param {User['id']} id - El id del usuario
- * @returns {User}
+ * @param {number} id
+ * @returns {Promise<Object|null>}
  */
-const findUserById = (id) => {
-  const smtm = db.prepare('SELECT id, nombre, apellido, email, rol FROM users WHERE id = ?');
-  const user = smtm.get(id);
-  return user;
+const findUserById = async (id) => {
+  const { data, error } = await supabase
+    .from('users')
+    .select('id, nombre, apellido, email, rol')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
 };
 
 const userRepository = {

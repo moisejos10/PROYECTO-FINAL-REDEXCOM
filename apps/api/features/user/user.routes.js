@@ -18,7 +18,7 @@ userRouter.post('/', async (req, res, next) => {
     const passwordHash = await bcrypt.hash(body.password, 10);
 
     // 3. Guardar en la base de datos
-    createdUser = userRepository.createUser({
+    createdUser = await userRepository.createUser({
       nombre: body.nombre,
       apellido: body.apellido,
       email: body.email,
@@ -29,7 +29,7 @@ userRouter.post('/', async (req, res, next) => {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 1000 * 60 * 60).toISOString(); // 1 hora
 
-    verificationRepository.createCode({
+    await verificationRepository.createCode({
       code,
       userId: createdUser.id,
       expiresAt,
@@ -62,10 +62,10 @@ userRouter.post('/', async (req, res, next) => {
     if (createdUser) {
       console.log('Error tras crear usuario - eliminando datos revertidos');
       try {
-        // Debemos eliminar los códigos primero para no violar Foreign Keys
-        const db = (await import('../../db/index.js')).default;
-        db.prepare('DELETE FROM verification_codes WHERE user_id = ?').run(createdUser.id);
-        userRepository.deleteUserById(createdUser.id);
+        // Eliminar códigos de verificación y luego el usuario
+        const supabase = (await import('../../db/index.js')).default;
+        await supabase.from('verification_codes').delete().eq('user_id', createdUser.id);
+        await userRepository.deleteUserById(createdUser.id);
       } catch (rollbackError) {
         console.error('Error al hacer rollback', rollbackError);
       }
@@ -77,7 +77,7 @@ userRouter.post('/', async (req, res, next) => {
 // ── GET /api/user/tecnicos ── Obtener lista de técnicos (solo admin)
 userRouter.get('/tecnicos', authenticate, requireAdmin, async (req, res, next) => {
   try {
-    const tecnicos = userRepository.findTecnicos();
+    const tecnicos = await userRepository.findTecnicos();
     return res.status(200).json(tecnicos);
   } catch (error) {
     next(error);

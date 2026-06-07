@@ -19,9 +19,9 @@ ticketRouter.get('/stats', async (req, res, next) => {
     let stats;
 
     if (req.user.rol === 'admin' || req.user.rol === 'super_admin') {
-      stats = ticketRepository.getTicketStats();
+      stats = await ticketRepository.getTicketStats();
     } else {
-      stats = ticketRepository.getTicketStatsByTecnico(req.user.id);
+      stats = await ticketRepository.getTicketStatsByTecnico(req.user.id);
     }
 
     return res.status(200).json(stats);
@@ -36,9 +36,9 @@ ticketRouter.get('/weekly/stats', async (req, res, next) => {
     let stats;
 
     if (req.user.rol === 'admin' || req.user.rol === 'super_admin') {
-      stats = ticketRepository.getWeeklyTicketStats();
+      stats = await ticketRepository.getWeeklyTicketStats();
     } else {
-      stats = ticketRepository.getWeeklyTicketStatsByTecnico(req.user.id);
+      stats = await ticketRepository.getWeeklyTicketStatsByTecnico(req.user.id);
     }
 
     return res.status(200).json(stats);
@@ -53,9 +53,9 @@ ticketRouter.get('/weekly', async (req, res, next) => {
     let tickets;
 
     if (req.user.rol === 'admin' || req.user.rol === 'super_admin') {
-      tickets = ticketRepository.findWeeklyTickets();
+      tickets = await ticketRepository.findWeeklyTickets();
     } else {
-      tickets = ticketRepository.findWeeklyTicketsByTecnico(req.user.id);
+      tickets = await ticketRepository.findWeeklyTicketsByTecnico(req.user.id);
     }
 
     return res.status(200).json(tickets);
@@ -67,11 +67,11 @@ ticketRouter.get('/weekly', async (req, res, next) => {
 // ── GET /api/tickets/stats/advanced ── Estadísticas avanzadas (solo admin)
 ticketRouter.get('/stats/advanced', requireAdmin, async (req, res, next) => {
   try {
-    const stats = ticketRepository.getTicketStats();
-    const ranking = ticketRepository.getTicketsByTecnicoRanking();
-    const trend = ticketRepository.getWeeklyTicketTrend();
-    const avgTime = ticketRepository.getAverageResolutionTime();
-    const topTecnico = ticketRepository.getTopTecnico();
+    const stats = await ticketRepository.getTicketStats();
+    const ranking = await ticketRepository.getTicketsByTecnicoRanking();
+    const trend = await ticketRepository.getWeeklyTicketTrend();
+    const avgTime = await ticketRepository.getAverageResolutionTime();
+    const topTecnico = await ticketRepository.getTopTecnico();
 
     return res.status(200).json({
       distribucion: stats,
@@ -91,9 +91,9 @@ ticketRouter.get('/', async (req, res, next) => {
     let tickets;
 
     if (req.user.rol === 'admin' || req.user.rol === 'super_admin') {
-      tickets = ticketRepository.findAllTickets();
+      tickets = await ticketRepository.findAllTickets();
     } else {
-      tickets = ticketRepository.findTicketsByTecnicoId(req.user.id);
+      tickets = await ticketRepository.findTicketsByTecnicoId(req.user.id);
     }
 
     return res.status(200).json(tickets);
@@ -105,7 +105,7 @@ ticketRouter.get('/', async (req, res, next) => {
 // ── GET /api/tickets/:id ── Detalle de un ticket
 ticketRouter.get('/:id', async (req, res, next) => {
   try {
-    const ticket = ticketRepository.findTicketById(Number(req.params.id));
+    const ticket = await ticketRepository.findTicketById(Number(req.params.id));
 
     if (!ticket) {
       return res.status(404).json({ error: 'Ticket no encontrado' });
@@ -129,13 +129,13 @@ ticketRouter.post('/', requireAdmin, async (req, res, next) => {
     const body = createTicketRouteSchema.body.parse(req.body);
 
     // 2. Verificar que el técnico existe
-    const tecnico = userRepository.findUserById(body.tecnico_id);
+    const tecnico = await userRepository.findUserById(body.tecnico_id);
     if (!tecnico) {
       return res.status(404).json({ error: 'El técnico seleccionado no existe' });
     }
 
     // 3. Crear el ticket en la base de datos
-    const createdTicket = ticketRepository.createTicket({
+    const createdTicket = await ticketRepository.createTicket({
       clienteNombre: body.cliente_nombre,
       clienteDireccion: body.cliente_direccion,
       clienteTelefono: body.cliente_telefono,
@@ -177,14 +177,14 @@ ticketRouter.post('/', requireAdmin, async (req, res, next) => {
   }
 });
 
-// ── PATCH /api/tickets/:id/status ── Cambiar estatus (solo admin)
+// ── PATCH /api/tickets/:id/status ── Cambiar estatus
 ticketRouter.patch('/:id/status', requireAdmin, async (req, res, next) => {
   try {
     // 1. Validar los datos recibidos
     const body = updateTicketStatusRouteSchema.body.parse(req.body);
 
     // 2. Verificar que el ticket existe
-    const existingTicket = ticketRepository.findTicketById(Number(req.params.id));
+    const existingTicket = await ticketRepository.findTicketById(Number(req.params.id));
     if (!existingTicket) {
       return res.status(404).json({ error: 'Ticket no encontrado' });
     }
@@ -199,7 +199,7 @@ ticketRouter.patch('/:id/status', requireAdmin, async (req, res, next) => {
       });
 
       // Guardar el registro de cierre
-      ticketRepository.createTicketCierre({
+      await ticketRepository.createTicketCierre({
         ticketId: Number(req.params.id),
         cambioEquipo: checklistData.cambio_equipo,
         testVelocidad: checklistData.test_velocidad,
@@ -210,7 +210,7 @@ ticketRouter.patch('/:id/status', requireAdmin, async (req, res, next) => {
     }
 
     // 4. Actualizar el estatus
-    const updatedTicket = ticketRepository.updateTicketStatus({
+    const updatedTicket = await ticketRepository.updateTicketStatus({
       id: Number(req.params.id),
       estatus: body.estatus,
     });
@@ -218,7 +218,7 @@ ticketRouter.patch('/:id/status', requireAdmin, async (req, res, next) => {
     // 5. Si el ticket se resuelve, enviar correo al administrador que lo creó
     if (body.estatus === 'resuelto') {
       try {
-        const creador = userRepository.findUserById(existingTicket.creador_id);
+        const creador = await userRepository.findUserById(existingTicket.creador_id);
         if (creador) {
           await nodemailerService.sendMail({
             to: creador.email,
@@ -252,7 +252,7 @@ ticketRouter.patch('/:id/status', requireAdmin, async (req, res, next) => {
 // ── GET /api/tickets/:id/cierre ── Obtener checklist de cierre de un ticket
 ticketRouter.get('/:id/cierre', async (req, res, next) => {
   try {
-    const ticket = ticketRepository.findTicketById(Number(req.params.id));
+    const ticket = await ticketRepository.findTicketById(Number(req.params.id));
     if (!ticket) {
       return res.status(404).json({ error: 'Ticket no encontrado' });
     }
@@ -262,7 +262,7 @@ ticketRouter.get('/:id/cierre', async (req, res, next) => {
       return res.status(403).json({ error: 'No tienes permisos para ver este ticket' });
     }
 
-    const cierre = ticketRepository.findCierreByTicketId(Number(req.params.id));
+    const cierre = await ticketRepository.findCierreByTicketId(Number(req.params.id));
     if (!cierre) {
       return res.status(404).json({ error: 'Este ticket no tiene registro de cierre' });
     }
@@ -276,7 +276,7 @@ ticketRouter.get('/:id/cierre', async (req, res, next) => {
 // ── GET /api/tickets/:id/comentarios ── Listar comentarios de un ticket
 ticketRouter.get('/:id/comentarios', async (req, res, next) => {
   try {
-    const ticket = ticketRepository.findTicketById(Number(req.params.id));
+    const ticket = await ticketRepository.findTicketById(Number(req.params.id));
     if (!ticket) {
       return res.status(404).json({ error: 'Ticket no encontrado' });
     }
@@ -286,7 +286,7 @@ ticketRouter.get('/:id/comentarios', async (req, res, next) => {
       return res.status(403).json({ error: 'No tienes permisos para ver este ticket' });
     }
 
-    const comentarios = ticketRepository.findComentariosByTicketId(Number(req.params.id));
+    const comentarios = await ticketRepository.findComentariosByTicketId(Number(req.params.id));
     return res.status(200).json(comentarios);
   } catch (error) {
     next(error);
@@ -298,7 +298,7 @@ ticketRouter.post('/:id/comentarios', async (req, res, next) => {
   try {
     const body = createComentarioSchema.body.parse(req.body);
 
-    const ticket = ticketRepository.findTicketById(Number(req.params.id));
+    const ticket = await ticketRepository.findTicketById(Number(req.params.id));
     if (!ticket) {
       return res.status(404).json({ error: 'Ticket no encontrado' });
     }
@@ -308,7 +308,7 @@ ticketRouter.post('/:id/comentarios', async (req, res, next) => {
       return res.status(403).json({ error: 'No tienes permisos para comentar en este ticket' });
     }
 
-    const comentario = ticketRepository.createComentario({
+    const comentario = await ticketRepository.createComentario({
       ticketId: Number(req.params.id),
       usuarioId: req.user.id,
       contenido: body.contenido,
@@ -317,8 +317,8 @@ ticketRouter.post('/:id/comentarios', async (req, res, next) => {
     // Enviar correos de notificación de forma asíncrona (sin bloquear la respuesta)
     (async () => {
       try {
-        const tecnico = userRepository.findUserById(ticket.tecnico_id);
-        const creador = userRepository.findUserById(ticket.creador_id);
+        const tecnico = await userRepository.findUserById(ticket.tecnico_id);
+        const creador = await userRepository.findUserById(ticket.creador_id);
         const autor = req.user; // { id, email, rol, nombre }
 
         const subject = `Nuevo comentario en Ticket #${ticket.id} — RedexCom`;
@@ -393,13 +393,13 @@ ticketRouter.post('/:id/comentarios', async (req, res, next) => {
 ticketRouter.delete('/:id', requireAdmin, async (req, res, next) => {
   try {
     // 1. Verificar que el ticket existe
-    const ticket = ticketRepository.findTicketById(Number(req.params.id));
+    const ticket = await ticketRepository.findTicketById(Number(req.params.id));
     if (!ticket) {
       return res.status(404).json({ error: 'Ticket no encontrado' });
     }
 
     // 2. Eliminar el ticket
-    ticketRepository.deleteTicket(Number(req.params.id));
+    await ticketRepository.deleteTicket(Number(req.params.id));
 
     return res.status(200).json({ message: 'Ticket eliminado exitosamente' });
   } catch (error) {
@@ -408,4 +408,3 @@ ticketRouter.delete('/:id', requireAdmin, async (req, res, next) => {
 });
 
 export default ticketRouter;
-

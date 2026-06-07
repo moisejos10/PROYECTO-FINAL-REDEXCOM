@@ -1,4 +1,4 @@
-import db from '../../db/index.js';
+import supabase from '../../db/index.js';
 
 /**
  * Crea un código de verificación
@@ -6,15 +6,23 @@ import db from '../../db/index.js';
  * @param {string} payload.code - El código de 6 dígitos
  * @param {number} payload.userId - El id del usuario
  * @param {string} payload.expiresAt - Fecha de expiración ISO
+ * @returns {Promise<Object>}
  */
-const createCode = ({ code, userId, expiresAt }) => {
+const createCode = async ({ code, userId, expiresAt }) => {
   // Eliminar códigos anteriores del usuario
-  db.prepare('DELETE FROM verification_codes WHERE user_id = ?').run(userId);
+  await supabase
+    .from('verification_codes')
+    .delete()
+    .eq('user_id', userId);
 
-  const smtm = db.prepare(
-    'INSERT INTO verification_codes (code, user_id, expires_at) VALUES (?, ?, ?) RETURNING *',
-  );
-  return smtm.get(code, userId, expiresAt);
+  const { data, error } = await supabase
+    .from('verification_codes')
+    .insert({ code, user_id: userId, expires_at: expiresAt })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
 };
 
 /**
@@ -22,21 +30,33 @@ const createCode = ({ code, userId, expiresAt }) => {
  * @param {Object} payload
  * @param {string} payload.code - El código de 6 dígitos
  * @param {number} payload.userId - El id del usuario
- * @returns {Object|undefined}
+ * @returns {Promise<Object|null>}
  */
-const findValidCode = ({ code, userId }) => {
-  const smtm = db.prepare(
-    'SELECT * FROM verification_codes WHERE code = ? AND user_id = ? AND used = 0',
-  );
-  return smtm.get(code, userId);
+const findValidCode = async ({ code, userId }) => {
+  const { data, error } = await supabase
+    .from('verification_codes')
+    .select('*')
+    .eq('code', code)
+    .eq('user_id', userId)
+    .eq('used', false)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
 };
 
 /**
  * Marca un código como usado
  * @param {number} id - El id del código
+ * @returns {Promise<void>}
  */
-const markAsUsed = (id) => {
-  db.prepare('UPDATE verification_codes SET used = 1 WHERE id = ?').run(id);
+const markAsUsed = async (id) => {
+  const { error } = await supabase
+    .from('verification_codes')
+    .update({ used: true })
+    .eq('id', id);
+
+  if (error) throw error;
 };
 
 const verificationRepository = { createCode, findValidCode, markAsUsed };

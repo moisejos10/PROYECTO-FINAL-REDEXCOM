@@ -2,7 +2,6 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import userRouter from './features/user/user.routes.js';
 import { ZodError } from 'zod';
-import { SqliteError } from 'better-sqlite3';
 import authRouter from './features/auth/auth.routes.js';
 import ticketRouter from './features/tickets/ticket.routes.js';
 import { authenticate } from './features/auth/auth.middlewares.js';
@@ -10,9 +9,14 @@ import jwt from 'jsonwebtoken';
 import cors from 'cors';
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
-app.use(cors({ origin: ['http://localhost:4321'], credentials: true }));
+const allowedOrigins = ['http://localhost:4321'];
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -38,12 +42,14 @@ app.use((err, req, res, next) => {
     errorCode = 400;
   }
 
-  if (err instanceof SqliteError) {
-    if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
-      const property = err.message.split('.')[1];
-      errorCode = 400;
-      errorString = `${property ? property.toUpperCase() : 'El campo'} ya se encuentra en uso.`;
-    }
+  // Manejo de errores de base de datos de Supabase (PostgreSQL)
+  // Código 23505: violación de restricción única
+  if (err && err.code === '23505') {
+    const detail = err.detail || '';
+    const match = detail.match(/\((.*?)\)=\((.*?)\)/);
+    const property = match ? match[1] : '';
+    errorCode = 400;
+    errorString = `${property ? property.toUpperCase() : 'El campo'} ya se encuentra en uso.`;
   }
 
   if (err instanceof jwt.TokenExpiredError) {
@@ -58,7 +64,7 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(port, () => {
-  console.log(`🚀 API RedexCom corriendo en http://localhost:${port}`);
+  console.log(`🚀 API RedexCom corriendo en el puerto ${port}`);
 });
 
 export default app;

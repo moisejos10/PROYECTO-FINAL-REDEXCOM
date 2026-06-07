@@ -15,7 +15,7 @@ authRouter.post('/login', async (req, res) => {
   const body = logInSchema.body.parse(req.body);
 
   // 2. Buscar el posible usuario en la base de datos
-  const user = userRepository.findUserByEmail(body.email);
+  const user = await userRepository.findUserByEmail(body.email);
 
   if (!user) {
     return res.status(403).json({ error: 'Usuario o contraseña inválida' });
@@ -55,7 +55,7 @@ authRouter.post('/login', async (req, res) => {
   );
 
   // 7. Guardar sesión en la base de datos
-  authRepository.createSession({ jwtid: refreshTokenId, userId: user.id });
+  await authRepository.createSession({ jwtid: refreshTokenId, userId: user.id });
 
   // 8. Configurar cookie del refresh token
   const expireDate = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7);
@@ -83,7 +83,7 @@ authRouter.post('/verify', async (req, res, next) => {
     const { email, code } = verifyRouteSchema.body.parse(req.body);
 
     // 2. Buscar el usuario
-    const user = userRepository.findUserByEmail(email);
+    const user = await userRepository.findUserByEmail(email);
 
     if (!user) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
@@ -94,7 +94,7 @@ authRouter.post('/verify', async (req, res, next) => {
     }
 
     // 3. Buscar el código de verificación válido
-    const verificationCode = verificationRepository.findValidCode({
+    const verificationCode = await verificationRepository.findValidCode({
       code,
       userId: user.id,
     });
@@ -112,8 +112,8 @@ authRouter.post('/verify', async (req, res, next) => {
     }
 
     // 5. Marcar código como usado y verificar el email
-    verificationRepository.markAsUsed(verificationCode.id);
-    userRepository.updateEmailVerify(user.id);
+    await verificationRepository.markAsUsed(verificationCode.id);
+    await userRepository.updateEmailVerify(user.id);
 
     return res.status(200).json({ message: 'Cuenta verificada exitosamente.' });
   } catch (error) {
@@ -125,7 +125,7 @@ authRouter.post('/resend-code', async (req, res, next) => {
   try {
     const { email } = req.body;
 
-    const user = userRepository.findUserByEmail(email);
+    const user = await userRepository.findUserByEmail(email);
 
     if (!user) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
@@ -139,7 +139,7 @@ authRouter.post('/resend-code', async (req, res, next) => {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 1000 * 60 * 60).toISOString();
 
-    verificationRepository.createCode({
+    await verificationRepository.createCode({
       code,
       userId: user.id,
       expiresAt,
@@ -178,11 +178,11 @@ authRouter.get('/refresh', async (req, res) => {
     const decodedToken = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 
     // 3. Encontrar la session asociada al refresh token
-    const session = authRepository.findSessionByJwtId({ jwtid: decodedToken.jti });
+    const session = await authRepository.findSessionByJwtId({ jwtid: decodedToken.jti });
     if (!session) return res.sendStatus(401);
 
     // 3.5 Buscar datos frescos del usuario
-    const user = userRepository.findUserById(decodedToken.id);
+    const user = await userRepository.findUserById(decodedToken.id);
     if (!user) return res.sendStatus(401);
 
     // 4. Crear un nuevo token de acceso y refresh token
@@ -206,7 +206,7 @@ authRouter.get('/refresh', async (req, res) => {
       secure: process.env.ENV_MODE === 'prod',
       sameSite: 'strict',
     });
-    authRepository.updateSessionJwtId({ jwtid: refreshTokenId, id: session.id });
+    await authRepository.updateSessionJwtId({ jwtid: refreshTokenId, id: session.id });
 
     // 6. Responder al cliente con el nuevo token de acceso
     return res.status(200).json({ accessToken, userId: decodedToken.id, email: decodedToken.email });
@@ -231,7 +231,7 @@ authRouter.get('/signout', authenticate, async (req, res) => {
     const decodedToken = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 
     // 3. Encontrar la session asociada al refresh token
-    const session = authRepository.findSessionByJwtId({ jwtid: decodedToken.jti });
+    const session = await authRepository.findSessionByJwtId({ jwtid: decodedToken.jti });
     if (!session) return res.sendStatus(401);
 
     // 4. Eliminar el token de los cookies
@@ -242,7 +242,7 @@ authRouter.get('/signout', authenticate, async (req, res) => {
     });
 
     // 5. Eliminar la session de la base de datos
-    authRepository.deleteSession(session.id);
+    await authRepository.deleteSession(session.id);
 
     // 6. Responder al cliente
     return res.sendStatus(204);
