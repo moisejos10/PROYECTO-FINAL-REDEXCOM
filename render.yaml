@@ -25,10 +25,7 @@ services:
       - key: ENV_MODE
         value: prod
       - key: FRONTEND_URL
-        fromService:
-          name: redexcom-client
-          type: web
-          property: url
+        sync: false
 
   # 2. Astro Client Frontend
   - type: web
