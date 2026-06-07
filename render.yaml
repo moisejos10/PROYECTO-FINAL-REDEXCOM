@@ -1,0 +1,43 @@
+services:
+  # 1. API Express Backend
+  - type: web
+    name: redexcom-api
+    env: node
+    plan: free
+    rootDir: apps/api
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
+      - key: EMAIL_TOKEN_SECRET
+        sync: false
+      - key: ACCESS_TOKEN_SECRET
+        sync: false
+      - key: REFRESH_TOKEN_SECRET
+        sync: false
+      - key: ENV_MODE
+        value: prod
+      - key: FRONTEND_URL
+        fromService:
+          name: redexcom-client
+          type: web
+          property: url
+
+  # 2. Astro Client Frontend
+  - type: web
+    name: redexcom-client
+    env: node
+    plan: free
+    rootDir: apps/client
+    buildCommand: npm install && npm run build
+    startCommand: node dist/server/entry.mjs
+    envVars:
+      - key: NODE_ENV
+        value: production
