@@ -42,7 +42,7 @@ if (process.env.NODE_ENV === 'production') {
 app.use((err, req, res, next) => {
   console.log(err);
 
-  let errorString = 'Error desconocido';
+  let errorString = err.message || 'Error desconocido';
   let errorCode = 500;
 
   if (err instanceof ZodError) {
